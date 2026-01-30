@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-CmsApplication<cms>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.church.cms.CmsApplication",
+            "projectName": "cms",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
