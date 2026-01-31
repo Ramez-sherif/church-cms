@@ -1,0 +1,147 @@
+
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /*to include padding and border in element's total width and height*/
+  font-family:  "Cairo", sans-serif;
+}
+
+/*navbar*/
+.navbar{
+  position: absolute;               /*to make it stay on top*/
+  top: 0;                           /*align to top*/
+  width: 100%;                      /*full width*/
+  padding: 20px 60px;               /*top-bottom 20px, left-right 60px*/
+  display: flex;                    /*use flexbox for layout*/ 
+  justify-content: space-between;   /*space between left and right items*/
+  align-items: center;              /*vertically center items*/
+  z-index: 10;                      /*stay on top of other elements*/
+}
+
+.navbar  ul{
+  list-style: none;                 /*remove default list styling*/
+  display: flex;                    /*use flexbox for horizontal layout*/
+  gap: 25px;                        /*space between list items*/
+}
+
+.navbar a{
+  text-decoration: none;            /*remove underline*/
+  color: #fff;                    /*text color*/
+  font-weight: 500;                 /*bold text*/
+  transition: 0.3s;                 /*smooth transition for hover effect*/
+}
+.navbar a:hover{
+  opacity: 0.8;                     /*slightly fade on hover*/
+}
+
+.logo{
+  color:#fff;
+  font-size: 26px;
+}
+
+/*hero section*/
+
+.hero{
+  height: 100vh;                                    /*full viewport height*/
+
+  background-image: url('/bg5.png');                /*background image*/
+  background-size:cover;                           /*cover entire area*/
+  background-position: center ;                      /*center background image*/
+  background-repeat: no-repeat;                      /*no repeat*/
+  position: relative;                               /*for positioning overlay*/
+  display: flex;                                    /*use flexbox*/
+  align-items: center;                              /*center items horizontally*/
+  justify-content: center;                          /*center items vertically*/
+  
+}
+ /* overlay to darken hero image for better text visibility */
+.overlay{
+  position: absolute;                                 /*position over hero image*/
+  inset: 0;                                           /*cover entire hero area*/        
+  background: rgba(0, 0, 0, 0.45);                  /*semi-transparent overlay*/
+}
+
+/*content*/
+
+.hero-content{
+  position: relative;                                /*position above overlay*/
+  text-align: center;                                /*centered text*/
+  max-width: 800px;                                 /*limit width for readability*/
+  color: #fff;                                     /*white text*/
+  padding: 20px;                                    /*padding around content*/
+}
+.hero-content h1{
+  font-size: 52px;                                 /*large heading*/
+  margin-bottom: 20px;                             /*space below heading*/
+}
+.hero-content p{
+  font-size: 18px;                                 /*subheading size*/
+  line-height: 1.6;                                /*improve readability*/
+  margin-bottom: 30px;                             /*space below paragraph*/
+  opacity: 0.95;                                   /*slightly faded text*/
+}
+.hero-content .btn{ 
+  padding: 14px 32px;                                /*button padding*/
+  background-color:#2563eb;                        /*button color*/
+  color: #fff;                                     /*button text color*/
+  border-radius: 8px;                                /*rounded corners*/ 
+  font-size: 16px;                                   /*button text size*/    
+  cursor: pointer;                                   /*change cursor on hover*/
+  transition: 0.3s;                                  /*smooth transition*/
+}
+.hero-btn:hover{
+  background-color: #1e4ed8;                        /*darker on hover*/
+}     
+
+
+
+
+
+
+
+
+
+
+
+/* #root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+} */

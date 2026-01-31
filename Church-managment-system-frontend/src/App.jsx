@@ -1,5 +1,4 @@
-
-import './App.css'
+import "./css/App.css";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';    //importing react router components
 import Attendance from './pages/Attendance.jsx';
 import AddAttendancePage from './pages/AddAttendance.jsx';
@@ -8,6 +7,9 @@ import Students from './pages/Students.jsx';
 import AddTeacher from './pages/AddTeacher.jsx';
 import Home from './pages/Home.jsx';
 import ClassGrades from './pages/ClassGrades.jsx';
+
+
+
 
 function App() {
  // const [count, setCount] = useState(0)
@@ -18,7 +20,7 @@ function App() {
         <Route path="/attendance" element={<Attendance />} />
         <Route path="/add-attendance/:classGradeId" element={<AddAttendancePage />} />
         <Route path="/teachers" element={<Teachers />} />
-        <Route path="/students" element={<Students />} />
+        <Route path="/class-grades/:classGradeId/students" element={<Students />} />
         <Route path="/add-teacher" element={<AddTeacher />} />
         <Route path='/home' element={<Home/>}/>
         <Route path='/class-grades' element={<ClassGrades/>}/>
@@ -29,3 +31,6 @@ function App() {
 }
 
 export default App
+/**
+ * PS D:\Microsoft Visual Studio Code\JavaSpring\church-cms\Church-managment-system-frontend> npm run dev    
+ */
