@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 const ClassGradeView = ({grades}) => {
     return(
         <div>
@@ -8,9 +9,9 @@ const ClassGradeView = ({grades}) => {
                 (
                     grades.map((grade) => (
                         <div key={grade.id}>
-                           
+                           <Link to={`/class-grades/${grade.id}/students`}>
                                 <h2>{grade.name}</h2>
-                           
+                           </Link>
                         </div>
                     ))
                 )
