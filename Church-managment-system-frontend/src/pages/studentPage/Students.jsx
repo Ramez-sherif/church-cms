@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { getStudentsByClassGradeId } from "../services/student.service";
+import { getStudentsByClassGradeId } from "../../services/student.service";
 import { useParams } from "react-router-dom";
-import StudentRow from "../components/student/StudentRow";
-import "../css/students.page.css";
+import StudentRow from "../../components/student/StudentRow";
+import "../../css/students.page.css";
 
 
 const monthNames = [
