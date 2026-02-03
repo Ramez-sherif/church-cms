@@ -1,12 +1,12 @@
 import "./css/App.css";
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';    //importing react router components
-import Attendance from './pages/Attendance.jsx';
-import AddAttendancePage from './pages/AddAttendance.jsx';
-import Teachers from './pages/Teachers.jsx';
-import Students from './pages/Students.jsx';
-import AddTeacher from './pages/AddTeacher.jsx';
+import Attendance from './pages/attendancePage/Attendance.jsx';
+import AddAttendancePage from './pages/attendancePage/AddAttendance.jsx';
+import Teachers from './pages/teacherPage/Teachers.jsx';
+import Students from './pages/studentPage/Students.jsx';
+import AddTeacher from './pages/teacherPage/AddTeacher.jsx';
 import Home from './pages/Home.jsx';
-import ClassGrades from './pages/ClassGrades.jsx';
+import ClassGrades from './pages/classGradePage/ClassGrades.jsx';
 
 
 

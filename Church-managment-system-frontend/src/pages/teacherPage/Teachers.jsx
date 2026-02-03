@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";    
-import {getTeachersByClassGradeId} from '../services/teacher.service';
+import {getTeachersByClassGradeId} from '../../services/teacher.service';
 import {useParams} from 'react-router-dom';
-import TeacherCard from "../components/teacher/TeacherCard";
+import TeacherCard from "../../components/teacher/TeacherCard";
 
 const Teachers =()=>{
     const {classGradeId} = useParams();

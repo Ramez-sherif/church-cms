@@ -1,6 +1,6 @@
-import AttendanceRow from "../components/attendance/AttendanceRecord";
+import AttendanceRow from "../../components/attendance/AttendanceRecord";
 import { useEffect, useState } from "react";
-import { getAllAttendanceRecords } from "../services/attendance.service";
+import { getAllAttendanceRecords } from "../../services/attendance.service";
 const Attendance = () => {
 
     const [attendanceRecords, setAttendanceRecords]=useState([]);

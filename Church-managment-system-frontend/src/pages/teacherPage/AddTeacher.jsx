@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { addTeacher } from "../services/teacher.service";
-import TeacherForm from "../components/teacher/TeacherForm";
+import { addTeacher } from "../../services/teacher.service";
+import TeacherForm from "../../components/teacher/TeacherForm";
 
 const AddTeacher = () => {
     const [FormData, setFormData] = useState({

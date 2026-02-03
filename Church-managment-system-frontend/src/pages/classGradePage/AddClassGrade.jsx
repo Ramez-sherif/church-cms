@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { addClassGrade } from "../services/classGrade.service";
+import { addClassGrade } from "../../services/classGrade.service";
 import ClassGradeFormComponent from "../components/ClassGradeFormComponent";
 
 const AddClassGrade = () => {

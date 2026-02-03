@@ -1,13 +1,13 @@
 import {useState,useEffect} from 'react';
 import {useParams} from 'react-router-dom';
 
-import {getStudentsByClassGradeId} from '../services/classGrade.service';
-import {getLastLessonForClass} from '../services/lesson.service';
-import{addAttendance} from '../services/attendance.service';
-import {getBirthdayStudentsByLesson} from '../services/student.service';
+import {getStudentsByClassGradeId} from '../../services/classGrade.service';
+import {getLastLessonForClass} from '../../services/lesson.service';
+import{addAttendance} from '../../services/attendance.service';
+import {getBirthdayStudentsByLesson} from '../../services/student.service';
 
-import AttendanceHeader from '../components/attendance/AttendanceHeader';  
-import AttendanceForm from '../components/attendance/AttendanceForm';
+import AttendanceHeader from '../../components/attendance/AttendanceHeader';  
+import AttendanceForm from '../../components/attendance/AttendanceForm';
 
 const AddAttendance= () =>{
     const {classGradeId}=useParams();                       //get classGradeId from url params
