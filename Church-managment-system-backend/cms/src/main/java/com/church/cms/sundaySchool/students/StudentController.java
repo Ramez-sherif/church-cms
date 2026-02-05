@@ -25,7 +25,7 @@ public class StudentController {
     @PostMapping
     public ResponseEntity<StudentResponseDTO> addStudent(@RequestBody StudentRequestDTO studentDTO) { 
         StudentResponseDTO saved= this.studentService.addStudent(studentDTO);     
-        return  new ResponseEntity(saved,HttpStatus.CREATED);
+        return  new ResponseEntity<>(saved,HttpStatus.CREATED);
     }
 
     // Get/students/12

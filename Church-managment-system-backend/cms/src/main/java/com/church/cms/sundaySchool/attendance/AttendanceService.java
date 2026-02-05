@@ -7,12 +7,8 @@ import org.springframework.stereotype.Service;
 
 import com.church.cms.sundaySchool.common.User;
 import com.church.cms.sundaySchool.common.UserService;
-import com.church.cms.sundaySchool.grades.ClassGrade;
-import com.church.cms.sundaySchool.grades.ClassGradeService;
 import com.church.cms.sundaySchool.lessons.Lesson;
 import com.church.cms.sundaySchool.lessons.LessonService;
-import com.church.cms.sundaySchool.students.StudentService;
-import com.church.cms.sundaySchool.teachers.TeacherService;
 
 import lombok.RequiredArgsConstructor;
 
