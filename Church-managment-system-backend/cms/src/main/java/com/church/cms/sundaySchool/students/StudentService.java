@@ -44,7 +44,7 @@ private final LessonService lessonService;
 //2. list all student in the class
 
      public List<StudentResponseDTO> getByClassGrade(Long classGradeId) {
-        return studentRepository.findByClassGradeId(classGradeId)
+        return studentRepository.findByClassGrade_Id(classGradeId)
             .stream()                                           // loop on each student
             .map(student -> StudentMapper.toDTO(student))       // convert to dto
             .toList();                                          // return it to list again
@@ -59,7 +59,7 @@ private final LessonService lessonService;
     LocalDate start= lastLessonDate.minusDays(3);
     LocalDate end = lastLessonDate.plusDays(3);
 
-    List<Student> students= this.studentRepository.findByClassGradeId(lastLesson.getClassGrade().getId());
+    List<Student> students= this.studentRepository.findByClassGrade_Id(lastLesson.getClassGrade().getId());
 
     List<Student> birthdayStudents= students
     .stream()                                                           // loop on each student

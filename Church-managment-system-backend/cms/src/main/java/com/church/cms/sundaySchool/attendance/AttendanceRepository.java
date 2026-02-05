@@ -8,10 +8,10 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface  AttendanceRepository extends JpaRepository<Attendance, Long>{
-    boolean existsByLessonIdAndUserId(UUID lessonId, UUID userId);
-    List<Attendance> findByLessonId(UUID lessonId);
+    boolean existsByLesson_IdAndUser_Id(UUID lessonId, UUID userId);
+    List<Attendance> findByLesson_Id(UUID lessonId);
     List<Attendance> findByLesson_ClassGrade_Id(long classGradeId);//attendance.lesson.classGrade.id
 
-    List<Attendance> findByUserId(UUID lessonId);
+    List<Attendance> findByUser_Id(UUID userId);
 
 }

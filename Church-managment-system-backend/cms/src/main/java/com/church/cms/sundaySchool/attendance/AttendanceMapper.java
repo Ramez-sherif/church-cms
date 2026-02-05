@@ -18,7 +18,7 @@ public class AttendanceMapper {
      public static AttendanceResponseDTO toDTO(Attendance attendace){
         AttendanceResponseDTO dto =new AttendanceResponseDTO();
         dto.setStatus(attendace.isStatus());
-        dto.setLessonTitle(attendace.getLesson().getName());
+        dto.setLessonTitle(attendace.getLesson().getTitle());
         dto.setLessonDate(attendace.getLesson().getDate());
         dto.setUserName(attendace.getUser().getFirstName()+" "+attendace.getUser().getLastName());
         dto.setUserRole(attendace.getUser().getRole());
