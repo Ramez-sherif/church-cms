@@ -39,7 +39,7 @@ public class TeacherService {
 
     //get List of teachers of class-grade 
     public List<TeacherResponseDTO> getTeachersByClassGrade(long  classGradeId){
-            return this.teacherRepository.findByClassGradeId(classGradeId)
+            return this.teacherRepository.findByClassGrade_Id(classGradeId)
             .stream()                   //loop int the list 
             .map(teacher->TeacherMapper.toDTO(teacher))   //convert each teacher from entity to DTO 
             .toList();      //return them to list 
