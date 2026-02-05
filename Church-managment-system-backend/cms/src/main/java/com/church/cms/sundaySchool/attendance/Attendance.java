@@ -1,14 +1,12 @@
 package com.church.cms.sundaySchool.attendance;
 
 import com.church.cms.sundaySchool.common.User;
-import com.church.cms.sundaySchool.grades.ClassGrade;
 import com.church.cms.sundaySchool.lessons.Lesson;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -39,13 +37,7 @@ public class Attendance {
     @ManyToOne(optional = false)
     private Lesson lesson;
 
-   /*
-   
-   @ManyToOne
-   @JoinColumn(name = "class_id")
-   private ClassGrade classGrade;
-   
-   */ 
+
   
 
 }
