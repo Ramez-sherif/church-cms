@@ -10,14 +10,12 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface LessonRepository extends JpaRepository<Lesson, UUID>{
-     List<Lesson> findByClassGradeId(Long classGradeId);
+     List<Lesson> findByClassGrade_Id(Long classGradeId);
 
-    boolean existsByDateAndClassGradeId(LocalDate date, Long classGradeId);
-    Optional<Lesson> findTopByClassGradeIdOrderByDateDesc(Long classGradeId); 
+    boolean existsByDateAndClassGrade_Id(LocalDate date, Long classGradeId);
+    Optional<Lesson> findTopByClassGrade_IdOrderByDateDesc(Long classGradeId); 
     // Get the most recent lesson for a class grade
     //top=> find the first record in the ordered list
     //orderByDateDesc => order by date in descending order
-
-    
-    
+  
 }

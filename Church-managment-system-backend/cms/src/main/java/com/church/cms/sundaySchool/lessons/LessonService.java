@@ -33,7 +33,7 @@ public class LessonService {
             throw new IllegalStateException("Only PDF files are allowed");
         }
 
-        if(this.lessonRepository.existsByDateAndClassGradeId(lessonRequestDTO.getDate(), lessonRequestDTO.getClassGradeId())){
+        if(this.lessonRepository.existsByDateAndClassGrade_Id(lessonRequestDTO.getDate(), lessonRequestDTO.getClassGradeId())){
             throw new IllegalStateException(
              "There is already a lesson for this class on this date"
             );
@@ -80,7 +80,7 @@ public class LessonService {
 
     //get list of lesson by class grade
     public List<LessonResponseDTO> getLessonsByClassGrade(Long classGradeId){
-        return  this.lessonRepository.findByClassGradeId(classGradeId)
+        return  this.lessonRepository.findByClassGrade_Id(classGradeId)
         .stream()
         .map(lesson->LessonMapper.toDTO(lesson))
         .toList();
@@ -89,7 +89,7 @@ public class LessonService {
 
     //get last lesson by class grade
     public LessonResponseDTO getLastLessonByClassGrade(Long classGradeId){
-        return this.lessonRepository.findTopByClassGradeIdOrderByDateDesc(classGradeId)
+        return this.lessonRepository.findTopByClassGrade_IdOrderByDateDesc(classGradeId)
         .map(lesson-> LessonMapper.toDTO(lesson))
         .orElseThrow(()->new IllegalStateException("No lessons found for this class grade"));
     }

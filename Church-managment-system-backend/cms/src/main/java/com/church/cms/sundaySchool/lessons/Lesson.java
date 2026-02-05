@@ -31,7 +31,7 @@ import lombok.Setter;
 @Table(
     name = "lessons",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"lessonDate", "class_grade_id"})
+        @UniqueConstraint(columnNames = {"lesson_Date", "class_grade_id"})
     }
 )
 public class Lesson {
@@ -40,9 +40,8 @@ public class Lesson {
     @UuidGenerator
     @Column(columnDefinition = "CHAR(36)")
     private UUID id;
-
- private String name;
  private String title;     
+ @Column(name = "lesson_Date",nullable=false)
  private LocalDate date;             // تاريخ شرح الدرس ✅
  private String pdfFilePath;         //   pdf  ملف  على السيرفر 
  
