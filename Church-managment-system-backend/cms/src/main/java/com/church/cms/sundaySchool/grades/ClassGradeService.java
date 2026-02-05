@@ -43,7 +43,7 @@ public class ClassGradeService {
 
     //get students By ClassGrade
     public List<StudentResponseDTO> getClassGradeStudents(long classGradeId){
-        return this.studentRepository.findByClassGradeId(classGradeId)
+        return this.studentRepository.findByClassGrade_Id(classGradeId)
         .stream()
         .map(student->StudentMapper.toDTO(student))
         .toList();

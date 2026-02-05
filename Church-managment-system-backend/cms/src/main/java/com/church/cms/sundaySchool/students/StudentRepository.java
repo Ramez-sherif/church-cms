@@ -11,6 +11,6 @@ import org.springframework.stereotype.Repository;
 public interface StudentRepository extends JpaRepository<Student, UUID>{
 
 boolean existsByStudentCode(String studentCode);
-List<Student> findByClassGradeId(long classGradeId);
+List<Student> findByClassGrade_Id(long classGradeId);
 
 }
