@@ -26,7 +26,7 @@ public class AttendanceService {
         User user = userService.getUserById(attendanceDTO.getUserId());
 
         if (this.attendanceRepository
-            .existsByLessonIdAndUserId(lesson.getId(), user.getId())){
+            .existsByLesson_IdAndUser_Id(lesson.getId(), user.getId())){
                 throw new IllegalStateException("Attendance already exists");
         }
         
@@ -38,7 +38,7 @@ public class AttendanceService {
     }
 
      public List<AttendanceResponseDTO> getAttendanceByLesson(UUID lessonId) {
-        return this.attendanceRepository.findByLessonId(lessonId)
+        return this.attendanceRepository.findByLesson_Id(lessonId)
         .stream()
         .map(attendace-> AttendanceMapper.toDTO(attendace))
         .toList();
@@ -52,7 +52,7 @@ public class AttendanceService {
 
      
     public List<AttendanceResponseDTO> getByUser(UUID userId) {
-         return this.attendanceRepository.findByUserId(userId)
+         return this.attendanceRepository.findByUser_Id(userId)
          .stream()
          .map(attendace-> AttendanceMapper.toDTO(attendace))
          .toList();
