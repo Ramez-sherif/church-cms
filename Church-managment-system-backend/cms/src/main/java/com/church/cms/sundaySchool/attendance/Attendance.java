@@ -4,9 +4,11 @@ import com.church.cms.sundaySchool.common.User;
 import com.church.cms.sundaySchool.lessons.Lesson;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -31,10 +33,12 @@ public class Attendance {
 
     private boolean status; // true = حاضر / false = غائب
     
-    @ManyToOne(optional=false)
+    @ManyToOne(fetch=FetchType.LAZY, optional=false)
+    @JoinColumn(name="user_id", nullable=false)
     private User user;  //خادم او مخدوم 
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch=FetchType.LAZY, optional=false)
+    @JoinColumn(name="lesson_id", nullable=false)
     private Lesson lesson;
 
 
