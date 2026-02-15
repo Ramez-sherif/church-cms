@@ -8,7 +8,7 @@ public class AttendanceMapper {
     public static Attendance toEntity(AttendanceRequestDTO dto,Lesson lesson,User user){
         
         Attendance attendance= new Attendance();
-        attendance.setStatus(dto.isStatus());
+        attendance.setStatus(dto.getStatus());
         attendance.setLesson(lesson);
         attendance.setUser(user);
         return attendance;     

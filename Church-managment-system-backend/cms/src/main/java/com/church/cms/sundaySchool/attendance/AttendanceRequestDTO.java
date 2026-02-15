@@ -9,8 +9,8 @@ import lombok.Setter;
 @Getter
 public class AttendanceRequestDTO {
  
-    private Long id;
-    private boolean status; // true = حاضر / false = غائب
+   
+    private Boolean status; // true = حاضر / false = غائب
     private UUID userId;
     private UUID lessonId;
    // private long  classGradeId;
