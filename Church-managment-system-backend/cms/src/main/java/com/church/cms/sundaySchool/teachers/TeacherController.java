@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,17 +13,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/teachers")
+@Validated
 public class TeacherController {
     private final TeacherService teacherService;
 
     @PostMapping
-    public ResponseEntity<TeacherResponseDTO> addTeacher(@RequestBody TeacherRequestDTO dto) {
+    public ResponseEntity<TeacherResponseDTO> addTeacher(@Valid @RequestBody TeacherRequestDTO dto) {
         TeacherResponseDTO saved= this.teacherService.addTeacher(dto);
         return new ResponseEntity<>(saved, HttpStatus.CREATED) ;
     }
@@ -32,8 +36,10 @@ public class TeacherController {
         return  ResponseEntity.ok(this.teacherService.getById(id));
     }
      @GetMapping("/class/{classGradeId}")
-      public ResponseEntity<List<TeacherResponseDTO>> getTeachersByClassGrade(@PathVariable long classGradeId) {
-        return  ResponseEntity.ok(this.teacherService.getTeachersByClassGrade(classGradeId));
+      public ResponseEntity<List<TeacherResponseDTO>> getTeachersByClassGrade(
+        @PathVariable @Positive(message="معرف الصف يجب أن يكون رقمًا موجبًا") long classGradeId) {
+        
+            return  ResponseEntity.ok(this.teacherService.getTeachersByClassGrade(classGradeId));
     }
     
 }
