@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.church.cms.shared.exceptions.NotFoundException;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -19,7 +21,7 @@ public class UserService {
 
     public User getUserById(UUID id) {
     return userRepository.findById(id)
-        .orElseThrow(() -> new IllegalStateException("User not found"));
+        .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
     public List<User> getAllTeachers(){

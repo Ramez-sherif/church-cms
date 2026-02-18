@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,17 +14,22 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.church.cms.sundaySchool.students.StudentResponseDTO;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/class-grades")
+@Validated
 public class ClassGradeController {
     private final ClassGradeService classGradeService;
 
     @PostMapping
-    public ResponseEntity<ClassGradeResponseDTO> addClassGrade(@RequestBody ClassGradeRequestDTO classGrade) {
+    public ResponseEntity<ClassGradeResponseDTO> addClassGrade(
+      @Valid @RequestBody ClassGradeRequestDTO classGrade) {
+
       ClassGradeResponseDTO saved= this.classGradeService.addClassGrade(classGrade);
       return new ResponseEntity<>(saved,HttpStatus.CREATED);
     }
@@ -32,7 +38,9 @@ public class ClassGradeController {
         return ResponseEntity.ok(this.classGradeService.getAllClassGrades());
     } 
      @GetMapping("/{id}/students")
-    public ResponseEntity<List<StudentResponseDTO>> getClassGradeStudents(@PathVariable long id){
+    public ResponseEntity<List<StudentResponseDTO>> getClassGradeStudents(
+      @PathVariable @Positive(message="معرف الصف يجب أن يكون رقمًا موجبًا") long id){
+      
         return ResponseEntity.ok(this.classGradeService.getClassGradeStudents(id));
     }
 }

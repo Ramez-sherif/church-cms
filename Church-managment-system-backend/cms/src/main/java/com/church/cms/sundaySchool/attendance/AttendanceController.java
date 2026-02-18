@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,19 +13,24 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/attendance")
+@Validated
 public class AttendanceController {
     private final AttendanceService attendanceService;
 
     @PostMapping
-    public ResponseEntity<AttendanceResponseDTO> addAttendance(@RequestBody AttendanceRequestDTO  attendance) {
-       AttendanceResponseDTO saved= this.attendanceService.addAttendance(attendance);
-       return new ResponseEntity<>(saved,HttpStatus.CREATED);
+    public ResponseEntity<AttendanceResponseDTO> addAttendance(
+        @Valid @RequestBody AttendanceRequestDTO  attendance) {
+    
+        AttendanceResponseDTO saved= this.attendanceService.addAttendance(attendance);
+        return new ResponseEntity<>(saved,HttpStatus.CREATED);
     }
 
     @GetMapping("/lesson/{lessonId}")
@@ -33,7 +39,9 @@ public class AttendanceController {
     }
     
     @GetMapping("/class/{classGradeId}")
-    public ResponseEntity<List<AttendanceResponseDTO>> getAttendanceByClassGradeId(@PathVariable long classGradeId){
+    public ResponseEntity<List<AttendanceResponseDTO>> getAttendanceByClassGradeId(
+        @PathVariable @Positive(message="معرف الصف يجب أن يكون رقمًا موجبًا") long classGradeId){
+      
         return ResponseEntity.ok(this.attendanceService
             .getAttendanceByClassGradeId(classGradeId));
     }

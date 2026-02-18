@@ -11,19 +11,24 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.validation.annotation.Validated;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
 
 @RestController
 @RequestMapping("/students")
 @RequiredArgsConstructor
+@Validated
 public class StudentController {
 
     private final StudentService studentService;
     
     @PostMapping
-    public ResponseEntity<StudentResponseDTO> addStudent(@RequestBody StudentRequestDTO studentDTO) { 
+    public ResponseEntity<StudentResponseDTO> addStudent(
+        @Valid @RequestBody StudentRequestDTO studentDTO) { 
+       
         StudentResponseDTO saved= this.studentService.addStudent(studentDTO);     
         return  new ResponseEntity<>(saved,HttpStatus.CREATED);
     }
@@ -35,7 +40,9 @@ public class StudentController {
     }
     
     @GetMapping("/class/{classGradeId}")
-    public ResponseEntity<List<StudentResponseDTO>> getStudentByClassGrade(@PathVariable long classGradeId){
+    public ResponseEntity<List<StudentResponseDTO>> getStudentByClassGrade(
+        @PathVariable @Positive(message="معرف الصف يجب أن يكون رقمًا موجبًا") long classGradeId){
+        
         return ResponseEntity.ok(this.studentService.getByClassGrade(classGradeId));
     }
 

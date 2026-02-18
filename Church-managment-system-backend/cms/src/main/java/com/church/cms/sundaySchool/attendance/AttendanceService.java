@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.church.cms.shared.exceptions.ConflictException;
 import com.church.cms.sundaySchool.common.User;
 import com.church.cms.sundaySchool.common.UserService;
 import com.church.cms.sundaySchool.lessons.Lesson;
@@ -27,23 +28,28 @@ public class AttendanceService {
 
         if (this.attendanceRepository
             .existsByLesson_IdAndUser_Id(lesson.getId(), user.getId())){
-                throw new IllegalStateException("Attendance already exists");
+                throw new ConflictException("Attendance already exists for this user in this lesson");
         }
         
         //create attendance obj
         Attendance attendance = AttendanceMapper.toEntity(attendanceDTO, lesson, user);
         //save in DB   
         this.attendanceRepository.save(attendance);
+       
         return AttendanceMapper.toDTO(attendance);
     }
 
      public List<AttendanceResponseDTO> getAttendanceByLesson(UUID lessonId) {
-        return this.attendanceRepository.findByLesson_Id(lessonId)
+        //ensure lesson exists
+        Lesson lesson = this.lessonService.getById(lessonId);
+
+        return this.attendanceRepository.findByLesson_Id(lesson.getId())
         .stream()
         .map(attendace-> AttendanceMapper.toDTO(attendace))
         .toList();
      }
        public List<AttendanceResponseDTO> getAttendanceByClassGradeId(long classGradeId) {
+       
         return this.attendanceRepository.findByLesson_ClassGrade_Id(classGradeId)
         .stream()
         .map(attendace-> AttendanceMapper.toDTO(attendace))
@@ -52,7 +58,10 @@ public class AttendanceService {
 
      
     public List<AttendanceResponseDTO> getByUser(UUID userId) {
-         return this.attendanceRepository.findByUser_Id(userId)
+        
+        userService.getUserById(userId); // to ensure user exists
+
+        return this.attendanceRepository.findByUser_Id(userId)
          .stream()
          .map(attendace-> AttendanceMapper.toDTO(attendace))
          .toList();
