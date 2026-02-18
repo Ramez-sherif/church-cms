@@ -9,6 +9,9 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.church.cms.shared.exceptions.BadRequestException;
+import com.church.cms.shared.exceptions.ConflictException;
+import com.church.cms.shared.exceptions.NotFoundException;
 import com.church.cms.sundaySchool.grades.ClassGrade;
 import com.church.cms.sundaySchool.grades.ClassGradeService;
 import com.church.cms.sundaySchool.teachers.Teacher;
@@ -28,15 +31,17 @@ public class LessonService {
     //Request DTO -> entity ,Entity -> DB , Entity -> Response DTO , Response DTO -> client 
 
     public LessonResponseDTO addLesson(LessonRequestDTO lessonRequestDTO){
+
+        if (lessonRequestDTO.getPdf() == null) {
+            throw new BadRequestException("PDF file is required");
+        }
             //validate pdf file
         if (!lessonRequestDTO.getPdf().getContentType().equals("application/pdf")) {
-            throw new IllegalStateException("Only PDF files are allowed");
+            throw new BadRequestException("Only PDF files are allowed");
         }
 
         if(this.lessonRepository.existsByDateAndClassGrade_Id(lessonRequestDTO.getDate(), lessonRequestDTO.getClassGradeId())){
-            throw new IllegalStateException(
-             "There is already a lesson for this class on this date"
-            );
+            throw new ConflictException("There is already a lesson for this class on this date");
         }
 
         // save pdf file to server and get path:
@@ -51,7 +56,7 @@ public class LessonService {
         try {
             Files.createDirectories(uploadPath);        
         } catch (IOException ex) {
-            System.getLogger(LessonService.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            throw new BadRequestException("Could not create upload directory");
         }
 
         //create file path with file name
@@ -61,7 +66,7 @@ public class LessonService {
         try {
             Files.copy(lessonRequestDTO.getPdf().getInputStream(), filePath); 
         } catch (IOException ex) {
-            System.getLogger(LessonService.class.getName()).log(System.Logger.Level.ERROR, (String) null, ex);
+            throw new BadRequestException("Failed to save PDF file");
         }
 
         //Get Teacher and ClassGrade obj:
@@ -69,17 +74,22 @@ public class LessonService {
         ClassGrade classGrade= this.classGradeService.getClassGradeById(lessonRequestDTO.getClassGradeId());
 
         //Create Lesson obj:
-        Lesson lesson= LessonMapper.toEntity(lessonRequestDTO, teacher, classGrade,"/uploads/lessons/" + fileName);
+        Lesson lesson= LessonMapper.toEntity(
+            lessonRequestDTO,
+            teacher, 
+            classGrade,
+            "/uploads/lessons/" + fileName);
 
         //save lesson in DB:
-         this.lessonRepository.save(lesson);
+        this.lessonRepository.save(lesson);
          
         //convert Entity to DTo
-         return LessonMapper.toDTO(lesson);
+        return LessonMapper.toDTO(lesson);
     }
 
     //get list of lesson by class grade
     public List<LessonResponseDTO> getLessonsByClassGrade(Long classGradeId){
+       
         return  this.lessonRepository.findByClassGrade_Id(classGradeId)
         .stream()
         .map(lesson->LessonMapper.toDTO(lesson))
@@ -89,18 +99,21 @@ public class LessonService {
 
     //get last lesson by class grade
     public LessonResponseDTO getLastLessonByClassGrade(Long classGradeId){
+       
         return this.lessonRepository.findTopByClassGrade_IdOrderByDateDesc(classGradeId)
         .map(lesson-> LessonMapper.toDTO(lesson))
-        .orElseThrow(()->new IllegalStateException("No lessons found for this class grade"));
+        .orElseThrow(()-> new NotFoundException("No lessons found for this class grade"));
     }
     public LessonResponseDTO getLessonById(UUID lessonId){
+       
         return this.lessonRepository.findById(lessonId)
         .map(lesson-> LessonMapper.toDTO(lesson))
-        .orElseThrow(()->new IllegalStateException("Lesson not found"));
+        .orElseThrow(()->new NotFoundException("Lesson not found"));
     }
     
     public Lesson getById(UUID lessonId){
+       
         return this.lessonRepository.findById(lessonId)
-        .orElseThrow(()->new IllegalStateException("Lesson not found"));
+        .orElseThrow(()->new NotFoundException("Lesson not found"));
     }
 }

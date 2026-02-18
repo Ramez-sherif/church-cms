@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.church.cms.shared.exceptions.ConflictException;
+import com.church.cms.shared.exceptions.NotFoundException;
 import com.church.cms.sundaySchool.grades.ClassGrade;
 import com.church.cms.sundaySchool.grades.ClassGradeService;
 import com.church.cms.sundaySchool.lessons.Lesson;
@@ -25,9 +27,10 @@ private final LessonService lessonService;
 
 // 1. create student 
     public StudentResponseDTO addStudent(StudentRequestDTO studentDTO){
+        
         //check Student code 
         if(this.studentRepository.existsByStudentCode(studentDTO.getStudentCode())){
-             throw new IllegalStateException("Student code already exists");
+            throw new ConflictException("Student code already exists");
         }
         //get class grade object
         ClassGrade classGrade= classGradeService.getClassGradeById(studentDTO.getClassGradeId());
@@ -44,6 +47,7 @@ private final LessonService lessonService;
 //2. list all student in the class
 
      public List<StudentResponseDTO> getByClassGrade(Long classGradeId) {
+       
         return studentRepository.findByClassGrade_Id(classGradeId)
             .stream()                                           // loop on each student
             .map(student -> StudentMapper.toDTO(student))       // convert to dto
@@ -56,21 +60,26 @@ private final LessonService lessonService;
 
     Lesson lastLesson= this.lessonService.getById(lastLessonId);
     LocalDate lastLessonDate= lastLesson.getDate();
+    
     LocalDate start= lastLessonDate.minusDays(3);
     LocalDate end = lastLessonDate.plusDays(3);
 
-    List<Student> students= this.studentRepository.findByClassGrade_Id(lastLesson.getClassGrade().getId());
+    List<Student> students= 
+    this.studentRepository.findByClassGrade_Id(lastLesson.getClassGrade().getId());
 
-    List<Student> birthdayStudents= students
-    .stream()                                                           // loop on each student
-    .filter(student->{                                                  // filter by birth date
-        LocalDate birthdayThisYear= student.getBirthDate().withYear(lastLessonDate.getYear());  // change year to this year
-        return ( !birthdayThisYear.isBefore(start) && !birthdayThisYear.isAfter(end) );        // check if in range
-    }).toList();                                                                              // return as list
+    List<Student> birthdayStudents= students   .stream()   // loop on each student                                                   
+         .filter(student->{                                                  // filter by birth date
+                 LocalDate birthdayThisYear= 
+                            student.getBirthDate().withYear(lastLessonDate.getYear());  // change year to this year
+                 return ( !birthdayThisYear.isBefore(start) && !birthdayThisYear.isAfter(end) );        // check if in range
+        })
+        .toList();                                                                              // return as list
 
-    return birthdayStudents.stream().map(student->{                 // loop on each student
-        return StudentMapper.toDTO(student);                       // convert to dto
-    }).toList();                                                  // return as list                            
+    return birthdayStudents.stream()
+            .map(student->{                 // loop on each student
+                return StudentMapper.toDTO(student);                       // convert to dto
+            })  
+            .toList();                                                  // return as list                            
  }
 
 
@@ -81,11 +90,11 @@ private final LessonService lessonService;
     public StudentResponseDTO getById(UUID id) {
         return studentRepository.findById(id)
                 .map(student->StudentMapper.toDTO(student))
-                .orElseThrow(() -> new IllegalStateException("Student not found"));
+                .orElseThrow(() -> new NotFoundException("Student not found"));
     }
          //3. get user by id
     public Student getByStudentId(UUID id) {
         return studentRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException("Student not found"));
+                .orElseThrow(() -> new NotFoundException("Student not found"));
     }
 }

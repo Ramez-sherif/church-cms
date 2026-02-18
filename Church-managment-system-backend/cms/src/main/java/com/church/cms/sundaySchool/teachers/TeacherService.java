@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.church.cms.shared.exceptions.NotFoundException;
 import com.church.cms.sundaySchool.grades.ClassGrade;
 import com.church.cms.sundaySchool.grades.ClassGradeService;
 
@@ -23,6 +24,7 @@ public class TeacherService {
     private final ClassGradeService classGradeService;
     //add teacher
     public TeacherResponseDTO addTeacher(TeacherRequestDTO dto){
+       
         //get class grade of the teacher :
         ClassGrade grade= this.classGradeService.getClassGradeById(dto.getClassGradeId());
 
@@ -39,7 +41,8 @@ public class TeacherService {
 
     //get List of teachers of class-grade 
     public List<TeacherResponseDTO> getTeachersByClassGrade(long  classGradeId){
-            return this.teacherRepository.findByClassGrade_Id(classGradeId)
+           
+        return this.teacherRepository.findByClassGrade_Id(classGradeId)
             .stream()                   //loop int the list 
             .map(teacher->TeacherMapper.toDTO(teacher))   //convert each teacher from entity to DTO 
             .toList();      //return them to list 
@@ -50,7 +53,7 @@ public class TeacherService {
     {
         return this.teacherRepository.findById(id)
         .map(teacher->TeacherMapper.toDTO(teacher))
-        .orElseThrow(()->new IllegalStateException("Teacher not found"));
+        .orElseThrow(()->new NotFoundException("Teacher not found"));
     }
 
 
@@ -58,7 +61,7 @@ public class TeacherService {
     public Teacher getTeacherById(UUID id)
     {
         return this.teacherRepository.findById(id)
-        .orElseThrow(()->new IllegalStateException("Teacher not found"));
+        .orElseThrow(()->new NotFoundException("Teacher not found"));
     }
     
 }
