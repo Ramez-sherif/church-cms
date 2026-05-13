@@ -301,6 +301,21 @@ public class GlobalExceptionHandler {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 
+     @ExceptionHandler(ForbiddenException.class)
+     public ResponseEntity<ApiErrorResponse> handleForbidden(
+        ForbiddenException ex, 
+        HttpServletRequest request) {
+            ApiErrorResponse body = ApiErrorResponse.builder()
+                .timestamp(Instant.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .error(HttpStatus.FORBIDDEN.getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .fieldErrors(null)
+                .build();
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
+    }
+
  // fallback 500
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> handleGeneric(

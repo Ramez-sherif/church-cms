@@ -17,51 +17,44 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class TeacherService {
 
-    //flow
-    //Request DTO -> Entity , Entity->save to DB ,Entity -> ResponseDTO , ResponseDTO -> client
+    // flow
+    // Request DTO -> Entity , Entity->save to DB ,Entity -> ResponseDTO ,
+    // ResponseDTO -> client
 
     private final TeacherRepository teacherRepository;
     private final ClassGradeService classGradeService;
-    //add teacher
-    public TeacherResponseDTO addTeacher(TeacherRequestDTO dto){
-       
-        //get class grade of the teacher :
-        ClassGrade grade= this.classGradeService.getClassGradeById(dto.getClassGradeId());
 
-        //create Teacher Entity  and convert ReqDTO to Entity:
-        Teacher teacher =  TeacherMapper.toEntity(dto, grade);
+    // add teacher
+    public TeacherResponseDTO addTeacher(TeacherRequestDTO dto) {
 
-        //save entity in DB:
-        this.teacherRepository.save(teacher);
+        ClassGrade grade = classGradeService.getClassGradeById(dto.getClassGradeId());
 
-        //convert Teacher Entity to Response DTO;
-         return TeacherMapper.toDTO(teacher);
-        
+        Teacher teacher = TeacherMapper.toEntity(dto, grade);
+        Teacher saved = teacherRepository.save(teacher);
+
+        return TeacherMapper.toDTO(saved);
     }
 
-    //get List of teachers of class-grade 
-    public List<TeacherResponseDTO> getTeachersByClassGrade(long  classGradeId){
-           
+    // get List of teachers of class-grade
+    public List<TeacherResponseDTO> getTeachersByClassGrade(long classGradeId) {
+
         return this.teacherRepository.findByClassGrade_Id(classGradeId)
-            .stream()                   //loop int the list 
-            .map(teacher->TeacherMapper.toDTO(teacher))   //convert each teacher from entity to DTO 
-            .toList();      //return them to list 
+                .stream() // loop int the list
+                .map(teacher -> TeacherMapper.toDTO(teacher)) // convert each teacher from entity to DTO
+                .toList(); // return them to list
     }
 
-    //get teachers by id 
-    public TeacherResponseDTO getById(UUID id)
-    {
+    // get teachers by id
+    public TeacherResponseDTO getById(UUID id) {
         return this.teacherRepository.findById(id)
-        .map(teacher->TeacherMapper.toDTO(teacher))
-        .orElseThrow(()->new NotFoundException("Teacher not found"));
+                .map(teacher -> TeacherMapper.toDTO(teacher))
+                .orElseThrow(() -> new NotFoundException("Teacher not found"));
     }
 
-
- //get teachers by id 
-    public Teacher getTeacherById(UUID id)
-    {
+    // get teachers by id
+    public Teacher getTeacherById(UUID id) {
         return this.teacherRepository.findById(id)
-        .orElseThrow(()->new NotFoundException("Teacher not found"));
+                .orElseThrow(() -> new NotFoundException("Teacher not found"));
     }
-    
+
 }

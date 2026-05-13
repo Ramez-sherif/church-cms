@@ -18,52 +18,40 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/class-grades")
 @Validated
 public class ClassGradeController {
-    private final ClassGradeService classGradeService;
+  private final ClassGradeService classGradeService;
 
-    @PostMapping
-    public ResponseEntity<ClassGradeResponseDTO> addClassGrade(
+  @PostMapping
+  public ResponseEntity<ClassGradeResponseDTO> addClassGrade(
       @Valid @RequestBody ClassGradeRequestDTO classGrade) {
 
-      ClassGradeResponseDTO saved= this.classGradeService.addClassGrade(classGrade);
-      return new ResponseEntity<>(saved,HttpStatus.CREATED);
-    }
-    @GetMapping
-    public ResponseEntity<List<ClassGradeResponseDTO>> getAllClassGrades(){
-        return ResponseEntity.ok(this.classGradeService.getAllClassGrades());
-    } 
-     @GetMapping("/{id}/students")
-    public ResponseEntity<List<StudentResponseDTO>> getClassGradeStudents(
-      @PathVariable @Positive(message="معرف الصف يجب أن يكون رقمًا موجبًا") long id){
-      
-        return ResponseEntity.ok(this.classGradeService.getClassGradeStudents(id));
-    }
+    ClassGradeResponseDTO saved = this.classGradeService.addClassGrade(classGrade);
+    return new ResponseEntity<>(saved, HttpStatus.CREATED);
+  }
+
+  @GetMapping
+  public ResponseEntity<List<ClassGradeResponseDTO>> getAllClassGrades() {
+    return ResponseEntity.ok(this.classGradeService.getAllClassGrades());
+  }
+
+  @GetMapping("/{id}/students")
+  public ResponseEntity<List<StudentResponseDTO>> getClassGradeStudents(
+      @PathVariable @Positive(message = "معرف الصف يجب أن يكون رقمًا موجبًا") long id) {
+
+    return ResponseEntity.ok(this.classGradeService.getClassGradeStudents(id));
+  }
 }
 /*
-POST-> localhost:8080/class-grades
-{
-  "name": "Grade 3"
-}
-
-GET->  /class-grades
-GET-> /class-grades/{id}/students
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
+ * POST-> localhost:8080/class-grades
+ * {
+ * "name": "Grade 3"
+ * }
+ * 
+ * GET-> /class-grades
+ * GET-> /class-grades/{id}/students
+ * 
+ */

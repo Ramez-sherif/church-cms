@@ -9,14 +9,14 @@ import lombok.Setter;
 @Setter
 @Getter
 public class AttendanceRequestDTO {
- 
-   @NotNull(message = "الحالة لا يمكن أن تكون فارغة")
-    private Boolean status; // true = حاضر / false = غائب
-    
-    @NotNull(message = "معرف المستخدم لا يمكن أن يكون فارغًا")
-    private UUID userId;
-   
-    @NotNull(message = "معرف الدرس لا يمكن أن يكون فارغًا")
-    private UUID lessonId;
-   // private long  classGradeId;
+
+   @NotNull(message = "Attendance status cannot be empty")
+   private Boolean status; // true = حاضر / false = غائب
+
+   @NotNull(message = "User id cannot be empty")
+   private UUID userId;
+
+   @NotNull(message = "Lesson id cannot be empty")
+   private UUID lessonId;
+   // private long classGradeId;
 }

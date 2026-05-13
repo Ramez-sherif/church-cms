@@ -14,29 +14,29 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TeacherRequestDTO {
-    @NotBlank(message = "الاسم الأول لا يمكن أن يكون فارغًا")
-    @Size(min = 2, max = 50, message = "الاسم الأول يجب أن يكون بين 2 و 50 حرفًا")
+    @NotBlank(message = "First name cannot be empty")
+    @Size(min = 2, max = 50, message = "First name must be between 2 and 50 characters")
     private String firstName;
 
-    @NotBlank(message = "اسم العائلة لا يمكن أن يكون فارغًا")
-    @Size(min = 2, max = 50, message = "اسم العائلة يجب أن يكون بين 2 و 50 حرفًا")
+    @NotBlank(message = "Last name cannot be empty")
+    @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
     private String lastName;
 
-    @NotNull(message = "تاريخ الميلاد لا يمكن أن يكون فارغًا")
-    @Past(message = "تاريخ الميلاد يجب أن يكون في الماضي")
-    private LocalDate birthDate;  //YYYY-MM-DD 
-    
-    @NotBlank(message = "رقم الهاتف لا يمكن أن يكون فارغًا")
-    @Pattern(regexp = "^01[0-2,5]{1}[0-9]{8}$", message = "رقم هاتف مصري غير صالح")
+    @NotNull(message = "Birth date cannot be empty")
+    @Past(message = "Birth date must be in the past")
+    private LocalDate birthDate; // YYYY-MM-DD
+
+    @NotBlank(message = "Phone number cannot be empty")
+    @Pattern(regexp = "^01[0-2,5]{1}[0-9]{8}$", message = "Invalid Egyptian phone number")
     private String phoneNumber;
-    
-    @Size(max = 255, message = "العنوان يجب أن لا يتجاوز 255 حرفًا")
+
+    @Size(max = 255, message = "Address must not exceed 255 characters")
     private String address;
 
-    @NotBlank(message = "الدور في الخدمة لا يمكن أن يكون فارغًا")
-    @Size(min = 2, max = 50, message = "الدور في الخدمة يجب أن يكون بين 2 و 50 حرفًا")
+    @NotBlank(message = "Service role cannot be empty")
+    @Size(min = 2, max = 50, message = "Service role must be between 2 and 50 characters")
     private String serviceRole;
-   
-    @Positive(message = "معرف الصف يجب أن يكون رقمًا موجبًا")
-    private long  classGradeId;
+
+    @Positive(message = "Class grade id must be positive")
+    private long classGradeId;
 }

@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+//import com.church.cms.auth.AuthorizationService;
 import com.church.cms.shared.exceptions.BadRequestException;
 import com.church.cms.shared.exceptions.ConflictException;
 import com.church.cms.shared.exceptions.NotFoundException;
@@ -27,93 +28,118 @@ public class LessonService {
     private final LessonRepository lessonRepository;
     private final TeacherService teacherService;
     private final ClassGradeService classGradeService;
+    // private final AuthorizationService authorizationService;
 
-    //Request DTO -> entity ,Entity -> DB , Entity -> Response DTO , Response DTO -> client 
+    // Request DTO -> entity ,Entity -> DB , Entity -> Response DTO , Response DTO
+    // -> client
 
-    public LessonResponseDTO addLesson(LessonRequestDTO lessonRequestDTO){
+    public LessonResponseDTO addLesson(LessonRequestDTO lessonRequestDTO) {
 
         if (lessonRequestDTO.getPdf() == null) {
             throw new BadRequestException("PDF file is required");
         }
-            //validate pdf file
+        // validate pdf file
         if (!lessonRequestDTO.getPdf().getContentType().equals("application/pdf")) {
             throw new BadRequestException("Only PDF files are allowed");
         }
 
-        if(this.lessonRepository.existsByDateAndClassGrade_Id(lessonRequestDTO.getDate(), lessonRequestDTO.getClassGradeId())){
+        if (this.lessonRepository.existsByDateAndClassGrade_Id(lessonRequestDTO.getDate(),
+                lessonRequestDTO.getClassGradeId())) {
             throw new ConflictException("There is already a lesson for this class on this date");
         }
 
         // save pdf file to server and get path:
 
         // create unique file name://to avoid duplicate file names
-        String fileName= UUID.randomUUID()+"_"+lessonRequestDTO.getPdf().getOriginalFilename(); 
-        
+        String fileName = UUID.randomUUID() + "_" + lessonRequestDTO.getPdf().getOriginalFilename();
+
         // specify your upload directory
-        Path uploadPath= Paths.get("uploads/lessons"); 
-        
-        //create directories if not exist
+        Path uploadPath = Paths.get("uploads/lessons");
+
+        // create directories if not exist
         try {
-            Files.createDirectories(uploadPath);        
+            Files.createDirectories(uploadPath);
         } catch (IOException ex) {
             throw new BadRequestException("Could not create upload directory");
         }
 
-        //create file path with file name
-        Path filePath= uploadPath.resolve(fileName);   
+        // create file path with file name
+        Path filePath = uploadPath.resolve(fileName);
 
-        //save the file to the server from windows
+        // save the file to the server from windows
         try {
-            Files.copy(lessonRequestDTO.getPdf().getInputStream(), filePath); 
+            Files.copy(lessonRequestDTO.getPdf().getInputStream(), filePath);
         } catch (IOException ex) {
             throw new BadRequestException("Failed to save PDF file");
         }
 
-        //Get Teacher and ClassGrade obj:
+        // Get Teacher and ClassGrade obj:
         Teacher teacher = this.teacherService.getTeacherById(lessonRequestDTO.getTeacherId());
-        ClassGrade classGrade= this.classGradeService.getClassGradeById(lessonRequestDTO.getClassGradeId());
+        ClassGrade classGrade = this.classGradeService.getClassGradeById(lessonRequestDTO.getClassGradeId());
 
-        //Create Lesson obj:
-        Lesson lesson= LessonMapper.toEntity(
-            lessonRequestDTO,
-            teacher, 
-            classGrade,
-            "/uploads/lessons/" + fileName);
+        // 🔐 teacher must own lesson class
+        // authorizationService.assertTeacherOwnsClass(classGrade.getId());
 
-        //save lesson in DB:
+        // Create Lesson obj:
+        Lesson lesson = LessonMapper.toEntity(
+                lessonRequestDTO,
+                teacher,
+                classGrade,
+                "/uploads/lessons/" + fileName);
+
+        // save lesson in DB:
         this.lessonRepository.save(lesson);
-         
-        //convert Entity to DTo
+
+        // convert Entity to DTo
         return LessonMapper.toDTO(lesson);
     }
 
-    //get list of lesson by class grade
-    public List<LessonResponseDTO> getLessonsByClassGrade(Long classGradeId){
-       
-        return  this.lessonRepository.findByClassGrade_Id(classGradeId)
-        .stream()
-        .map(lesson->LessonMapper.toDTO(lesson))
-        .toList();
+    // get list of lesson by class grade
+    public List<LessonResponseDTO> getLessonsByClassGrade(Long classGradeId) {
+
+        // 🔐 teacher must own lesson class
+        // authorizationService.assertTeacherOwnsClass(classGradeId);
+
+        return this.lessonRepository.findByClassGrade_Id(classGradeId)
+                .stream()
+                .map(lesson -> LessonMapper.toDTO(lesson))
+                .toList();
     }
 
+    // get last lesson by class grade
+    public LessonResponseDTO getLastLessonByClassGrade(Long classGradeId) {
 
-    //get last lesson by class grade
-    public LessonResponseDTO getLastLessonByClassGrade(Long classGradeId){
-       
+        // 🔐 teacher must own lesson class
+        // authorizationService.assertTeacherOwnsClass(classGradeId);
+
         return this.lessonRepository.findTopByClassGrade_IdOrderByDateDesc(classGradeId)
-        .map(lesson-> LessonMapper.toDTO(lesson))
-        .orElseThrow(()-> new NotFoundException("No lessons found for this class grade"));
+                .map(lesson -> LessonMapper.toDTO(lesson))
+                .orElseThrow(() -> new NotFoundException("No lessons found for this class grade"));
     }
-    public LessonResponseDTO getLessonById(UUID lessonId){
-       
-        return this.lessonRepository.findById(lessonId)
-        .map(lesson-> LessonMapper.toDTO(lesson))
-        .orElseThrow(()->new NotFoundException("Lesson not found"));
+
+    public LessonResponseDTO getLessonById(UUID lessonId) {
+        Lesson lesson = this.lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new NotFoundException("Lesson not found"));
+
+        // 🔐 teacher must own lesson class
+        // authorizationService.assertTeacherOwnsClass(lesson.getClassGrade().getId());
+
+        return LessonMapper.toDTO(lesson);
     }
-    
-    public Lesson getById(UUID lessonId){
-       
+
+    public Lesson getById(UUID lessonId) {
+
+        // if (authorizationService.isCurrentTeacher()) {
+        Lesson lesson = this.lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new NotFoundException("Lesson not found"));
+
+        if (lesson.getClassGrade() == null) {
+            throw new BadRequestException("Lesson has no class grade");
+        }
+        // 🔐 teacher must own lesson class
+        // authorizationService.assertTeacherOwnsClass(lesson.getClassGrade().getId());
+        // }
         return this.lessonRepository.findById(lessonId)
-        .orElseThrow(()->new NotFoundException("Lesson not found"));
+                .orElseThrow(() -> new NotFoundException("Lesson not found"));
     }
 }

@@ -1,16 +1,13 @@
-package com.church.cms.sundaySchool.grades;
+package com.church.cms.sundaySchool.stageGroups;
 
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter
 @Getter
-public class ClassGradeResponseDTO {
+@Setter
+public class StageGroupResponseDTO {
     private Long id;
     private String name;
-
-    private Long stageGroupId;
-    private String stageGroupName;
 
     private Long stageId;
     private String stageName;

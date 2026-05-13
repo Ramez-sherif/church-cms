@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+//import com.church.cms.auth.AuthorizationService;
 import com.church.cms.shared.exceptions.ConflictException;
 import com.church.cms.sundaySchool.common.User;
 import com.church.cms.sundaySchool.common.UserService;
@@ -16,55 +17,61 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AttendanceService {
-    private final AttendanceRepository attendanceRepository;
-    private final LessonService lessonService;
-    private final UserService userService;
+  private final AttendanceRepository attendanceRepository;
+  private final LessonService lessonService;
+  private final UserService userService;
+  // private final AuthorizationService authorizationService;
 
-    //create attendace sheet
-    public AttendanceResponseDTO addAttendance(AttendanceRequestDTO attendanceDTO){
-        //get lesson , class grade ,user object
-        Lesson lesson =this.lessonService.getById(attendanceDTO.getLessonId());
-        User user = userService.getUserById(attendanceDTO.getUserId());
+  // create attendace sheet
+  public AttendanceResponseDTO addAttendance(AttendanceRequestDTO attendanceDTO) {
+    Lesson lesson = this.lessonService.getById(attendanceDTO.getLessonId());
+    User user = userService.getUserById(attendanceDTO.getUserId());
 
-        if (this.attendanceRepository
-            .existsByLesson_IdAndUser_Id(lesson.getId(), user.getId())){
-                throw new ConflictException("Attendance already exists for this user in this lesson");
-        }
-        
-        //create attendance obj
-        Attendance attendance = AttendanceMapper.toEntity(attendanceDTO, lesson, user);
-        //save in DB   
-        this.attendanceRepository.save(attendance);
-       
-        return AttendanceMapper.toDTO(attendance);
+    // 🔐 teacher must own lesson class
+    // authorizationService.assertTeacherOwnsClass(lesson.getClassGrade().getId());
+
+    if (attendanceRepository.existsByLesson_IdAndUser_Id(lesson.getId(), user.getId())) {
+      throw new ConflictException("Attendance already exists for this user in this lesson");
     }
 
-     public List<AttendanceResponseDTO> getAttendanceByLesson(UUID lessonId) {
-        //ensure lesson exists
-        Lesson lesson = this.lessonService.getById(lessonId);
+    Attendance attendance = AttendanceMapper.toEntity(attendanceDTO, lesson, user);
+    Attendance saved = attendanceRepository.save(attendance);
 
-        return this.attendanceRepository.findByLesson_Id(lesson.getId())
+    return AttendanceMapper.toDTO(saved);
+  }
+
+  public List<AttendanceResponseDTO> getAttendanceByLesson(UUID lessonId) {
+    // ensure lesson exists
+    Lesson lesson = this.lessonService.getById(lessonId);
+
+    // 🔐 teacher must own lesson class
+    // authorizationService.assertTeacherOwnsClass(lesson.getClassGrade().getId());
+
+    return this.attendanceRepository.findByLesson_Id(lesson.getId())
         .stream()
-        .map(attendace-> AttendanceMapper.toDTO(attendace))
+        .map(attendace -> AttendanceMapper.toDTO(attendace))
         .toList();
-     }
-       public List<AttendanceResponseDTO> getAttendanceByClassGradeId(long classGradeId) {
-       
-        return this.attendanceRepository.findByLesson_ClassGrade_Id(classGradeId)
+  }
+
+  public List<AttendanceResponseDTO> getAttendanceByClassGradeId(long classGradeId) {
+
+    // 🔐 teacher must own lesson class
+    // authorizationService.assertTeacherOwnsClass(classGradeId);
+
+    return this.attendanceRepository.findByLesson_ClassGrade_Id(classGradeId)
         .stream()
-        .map(attendace-> AttendanceMapper.toDTO(attendace))
+        .map(attendace -> AttendanceMapper.toDTO(attendace))
         .toList();
-     }
+  }
 
-     
-    public List<AttendanceResponseDTO> getByUser(UUID userId) {
-        
-        userService.getUserById(userId); // to ensure user exists
+  public List<AttendanceResponseDTO> getByUser(UUID userId) {
 
-        return this.attendanceRepository.findByUser_Id(userId)
-         .stream()
-         .map(attendace-> AttendanceMapper.toDTO(attendace))
-         .toList();
-    }
-    
+    userService.getUserById(userId); // to ensure user exists
+
+    return this.attendanceRepository.findByUser_Id(userId)
+        .stream()
+        .map(attendace -> AttendanceMapper.toDTO(attendace))
+        .toList();
+  }
+
 }
