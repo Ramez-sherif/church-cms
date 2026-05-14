@@ -42,7 +42,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         final String username;
 
-        // check header
+        // =========================
+        // Check Authorization Header
+        // =========================
         if (authHeader == null
                 || !authHeader.startsWith("Bearer ")) {
 
@@ -51,22 +53,30 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return;
         }
 
-        // extract token
+        // =========================
+        // Extract Token
+        // =========================
         jwtToken = authHeader.substring(7);
 
-        // extract username safely
+        // =========================
+        // Extract Username Safely
+        // =========================
         try {
 
             username = jwtService.extractUsername(jwtToken);
 
         } catch (Exception ex) {
 
-            filterChain.doFilter(request, response);
+            response.sendError(
+                    HttpServletResponse.SC_UNAUTHORIZED,
+                    "Invalid or expired token");
 
             return;
         }
 
-        // if not authenticated yet
+        // =========================
+        // Authenticate User
+        // =========================
         if (username != null
                 && SecurityContextHolder
                         .getContext()
@@ -92,6 +102,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 SecurityContextHolder
                         .getContext()
                         .setAuthentication(authToken);
+
+            } else {
+
+                response.sendError(
+                        HttpServletResponse.SC_UNAUTHORIZED,
+                        "Invalid or expired token");
+
+                return;
             }
         }
 

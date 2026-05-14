@@ -5,9 +5,11 @@ import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
-public class LoginResponseDTO {
+public class CurrentUserResponseDTO {
 
-    private String accessToken;
+    private String username;
 
-    private String refreshToken;
+    private String role;
+
+    private String fullName;
 }

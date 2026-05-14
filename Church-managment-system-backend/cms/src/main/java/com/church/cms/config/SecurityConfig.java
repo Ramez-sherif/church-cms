@@ -29,6 +29,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.church.cms.auth.jwt.AccountDetailsService;
 import com.church.cms.auth.jwt.JwtAuthFilter;
 
+import com.church.cms.shared.errors.JwtAccessDeniedHandler;
+import com.church.cms.shared.errors.JwtAuthenticationEntryPoint;
+
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -36,107 +39,120 @@ import lombok.RequiredArgsConstructor;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final AccountDetailsService accountDetailsService;
+        private final AccountDetailsService accountDetailsService;
 
-    private final JwtAuthFilter jwtAuthFilter;
+        private final JwtAuthFilter jwtAuthFilter;
 
-    // =========================
-    // Password Encoder
-    // =========================
-    @Bean
-    public PasswordEncoder passwordEncoder() {
+        private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
 
-        return new BCryptPasswordEncoder();
-    }
+        private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
-    // =========================
-    // Authentication Provider
-    // =========================
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
+        // =========================
+        // Password Encoder
+        // =========================
+        @Bean
+        public PasswordEncoder passwordEncoder() {
 
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+                return new BCryptPasswordEncoder();
+        }
 
-        authProvider.setUserDetailsService(
-                accountDetailsService);
+        // =========================
+        // Authentication Provider
+        // =========================
+        @Bean
+        public AuthenticationProvider authenticationProvider() {
 
-        authProvider.setPasswordEncoder(
-                passwordEncoder());
+                DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
 
-        return authProvider;
-    }
+                authProvider.setUserDetailsService(
+                                accountDetailsService);
 
-    // =========================
-    // Authentication Manager
-    // =========================
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration config)
-            throws Exception {
+                authProvider.setPasswordEncoder(
+                                passwordEncoder());
 
-        return config.getAuthenticationManager();
-    }
+                return authProvider;
+        }
 
-    // =========================
-    // Security Filter Chain
-    // =========================
-    @Bean
-    public SecurityFilterChain securityFilterChain(
-            HttpSecurity http)
-            throws Exception {
+        // =========================
+        // Authentication Manager
+        // =========================
+        @Bean
+        public AuthenticationManager authenticationManager(
+                        AuthenticationConfiguration config)
+                        throws Exception {
 
-        http
+                return config.getAuthenticationManager();
+        }
 
-                // disable csrf
-                .csrf(csrf -> csrf.disable())
+        // =========================
+        // Security Filter Chain
+        // =========================
+        @Bean
+        public SecurityFilterChain securityFilterChain(
+                        HttpSecurity http)
+                        throws Exception {
 
-                // enable cors
-                .cors(Customizer.withDefaults())
+                http
 
-                // stateless api
-                .sessionManagement(session -> session.sessionCreationPolicy(
-                        SessionCreationPolicy.STATELESS))
+                                // disable csrf
+                                .csrf(csrf -> csrf.disable())
 
-                // auth provider
-                .authenticationProvider(
-                        authenticationProvider())
+                                // enable cors
+                                .cors(Customizer.withDefaults())
 
-                // authorization
-                .authorizeHttpRequests(auth -> auth
+                                // stateless api
+                                .sessionManagement(session -> session.sessionCreationPolicy(
+                                                SessionCreationPolicy.STATELESS))
 
-                        // public
-                        .requestMatchers(
-                                "/auth/**")
-                        .permitAll()
+                                // auth provider
+                                .authenticationProvider(
+                                                authenticationProvider())
 
-                        // admin only
-                        .requestMatchers(
-                                "/teachers/**",
-                                "/class-grades/**",
-                                "/stages/**",
-                                "/stage-groups/**",
-                                "/fathers/**")
-                        .hasRole("ADMIN")
+                                // security exception handlers
+                                .exceptionHandling(ex -> ex
 
-                        // teacher + father + admin
-                        .requestMatchers(
-                                "/students/**",
-                                "/lessons/**",
-                                "/attendance/**")
-                        .hasAnyRole(
-                                "TEACHER",
-                                "FATHER",
-                                "ADMIN")
+                                                .authenticationEntryPoint(
+                                                                jwtAuthenticationEntryPoint)
 
-                        // everything else
-                        .anyRequest()
-                        .authenticated())
+                                                .accessDeniedHandler(
+                                                                jwtAccessDeniedHandler))
 
-                // jwt filter
-                .addFilterBefore(
-                        jwtAuthFilter,
-                        UsernamePasswordAuthenticationFilter.class);
+                                // routes authorization
+                                .authorizeHttpRequests(auth -> auth
 
-        return http.build();
-    }
+                                                // public endpoints
+                                                .requestMatchers(
+                                                                "/auth/**")
+                                                .permitAll()
+
+                                                // admin only
+                                                .requestMatchers(
+                                                                "/teachers/**",
+                                                                "/class-grades/**",
+                                                                "/stages/**",
+                                                                "/stage-groups/**",
+                                                                "/fathers/**")
+                                                .hasRole("ADMIN")
+
+                                                // teacher + father + admin
+                                                .requestMatchers(
+                                                                "/students/**",
+                                                                "/lessons/**",
+                                                                "/attendance/**")
+                                                .hasAnyRole(
+                                                                "TEACHER",
+                                                                "FATHER",
+                                                                "ADMIN")
+
+                                                // everything else
+                                                .anyRequest()
+                                                .authenticated())
+
+                                // jwt filter
+                                .addFilterBefore(
+                                                jwtAuthFilter,
+                                                UsernamePasswordAuthenticationFilter.class);
+
+                return http.build();
+        }
 }

@@ -22,8 +22,8 @@ public class LessonRequestDTO {
     @NotNull(message = "Date cannot be empty")
     private LocalDate date; // date of lesson
 
-    @NotNull(message = "Teacher id cannot be empty")
-    private UUID teacherId;
+    // @NotNull(message = "Teacher id cannot be empty")
+    // private UUID teacherId;
 
     @Positive(message = "Class grade id must be positive")
     private long classGradeId;

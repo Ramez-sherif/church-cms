@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-//import com.church.cms.auth.AuthorizationService;
+import com.church.cms.auth.AuthorizationService;
 import com.church.cms.shared.exceptions.ConflictException;
 import com.church.cms.sundaySchool.common.User;
 import com.church.cms.sundaySchool.common.UserService;
@@ -20,7 +20,7 @@ public class AttendanceService {
   private final AttendanceRepository attendanceRepository;
   private final LessonService lessonService;
   private final UserService userService;
-  // private final AuthorizationService authorizationService;
+  private final AuthorizationService authorizationService;
 
   // create attendace sheet
   public AttendanceResponseDTO addAttendance(AttendanceRequestDTO attendanceDTO) {
@@ -28,7 +28,7 @@ public class AttendanceService {
     User user = userService.getUserById(attendanceDTO.getUserId());
 
     // 🔐 teacher must own lesson class
-    // authorizationService.assertTeacherOwnsClass(lesson.getClassGrade().getId());
+    authorizationService.assertTeacherOwnsClass(lesson.getClassGrade().getId());
 
     if (attendanceRepository.existsByLesson_IdAndUser_Id(lesson.getId(), user.getId())) {
       throw new ConflictException("Attendance already exists for this user in this lesson");
@@ -45,7 +45,7 @@ public class AttendanceService {
     Lesson lesson = this.lessonService.getById(lessonId);
 
     // 🔐 teacher must own lesson class
-    // authorizationService.assertTeacherOwnsClass(lesson.getClassGrade().getId());
+    authorizationService.assertTeacherOwnsClass(lesson.getClassGrade().getId());
 
     return this.attendanceRepository.findByLesson_Id(lesson.getId())
         .stream()
@@ -56,7 +56,7 @@ public class AttendanceService {
   public List<AttendanceResponseDTO> getAttendanceByClassGradeId(long classGradeId) {
 
     // 🔐 teacher must own lesson class
-    // authorizationService.assertTeacherOwnsClass(classGradeId);
+    authorizationService.assertTeacherOwnsClass(classGradeId);
 
     return this.attendanceRepository.findByLesson_ClassGrade_Id(classGradeId)
         .stream()

@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-//import com.church.cms.auth.AuthorizationService;
+import com.church.cms.auth.AuthorizationService;
 import com.church.cms.shared.exceptions.ConflictException;
 import com.church.cms.shared.exceptions.NotFoundException;
 import com.church.cms.sundaySchool.grades.ClassGrade;
@@ -25,7 +25,7 @@ public class StudentService {
     private final StudentRepository studentRepository;
     private final ClassGradeService classGradeService;
     private final LessonService lessonService;
-    // private final AuthorizationService authorizationService;
+    private final AuthorizationService authorizationService;
 
     // 1. create student
     public StudentResponseDTO addStudent(StudentRequestDTO studentDTO) {
@@ -36,7 +36,7 @@ public class StudentService {
         }
 
         // 🔐 teacher must own lesson class
-        // authorizationService.assertTeacherOwnsClass(studentDTO.getClassGradeId());
+        authorizationService.assertTeacherOwnsClass(studentDTO.getClassGradeId());
 
         // get class grade object
         ClassGrade classGrade = classGradeService.getClassGradeById(studentDTO.getClassGradeId());
@@ -55,7 +55,7 @@ public class StudentService {
     public List<StudentResponseDTO> getByClassGrade(Long classGradeId) {
 
         // 🔐 teacher must own lesson class
-        // authorizationService.assertTeacherOwnsClass(classGradeId);
+        authorizationService.assertTeacherOwnsClass(classGradeId);
 
         return studentRepository.findByClassGrade_Id(classGradeId)
                 .stream()
@@ -69,7 +69,7 @@ public class StudentService {
         Lesson lastLesson = this.lessonService.getById(lastLessonId);
 
         // 🔐 teacher must own lesson class
-        // authorizationService.assertTeacherOwnsClass(lastLesson.getClassGrade().getId());
+        authorizationService.assertTeacherOwnsClass(lastLesson.getClassGrade().getId());
 
         LocalDate lastLessonDate = lastLesson.getDate();
 

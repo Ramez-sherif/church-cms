@@ -3,9 +3,14 @@ package com.church.cms.sundaySchool.teachers;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.church.cms.auth.Account;
+import com.church.cms.auth.AccountRepository;
+import com.church.cms.shared.exceptions.ConflictException;
 import com.church.cms.shared.exceptions.NotFoundException;
+import com.church.cms.sundaySchool.common.UserRole;
 import com.church.cms.sundaySchool.grades.ClassGrade;
 import com.church.cms.sundaySchool.grades.ClassGradeService;
 
@@ -17,44 +22,91 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class TeacherService {
 
-    // flow
-    // Request DTO -> Entity , Entity->save to DB ,Entity -> ResponseDTO ,
-    // ResponseDTO -> client
-
     private final TeacherRepository teacherRepository;
+
     private final ClassGradeService classGradeService;
 
-    // add teacher
-    public TeacherResponseDTO addTeacher(TeacherRequestDTO dto) {
+    private final AccountRepository accountRepository;
 
-        ClassGrade grade = classGradeService.getClassGradeById(dto.getClassGradeId());
+    private final PasswordEncoder passwordEncoder;
 
+    // =========================
+    // Add Teacher
+    // =========================
+    public TeacherResponseDTO addTeacher(
+            TeacherRequestDTO dto) {
+
+        // username exists
+        if (accountRepository.existsByUsername(
+                dto.getUsername())) {
+
+            throw new ConflictException(
+                    "Username already exists");
+        }
+
+        // get class grade
+        ClassGrade grade = classGradeService.getClassGradeById(
+                dto.getClassGradeId());
+
+        // create teacher entity
         Teacher teacher = TeacherMapper.toEntity(dto, grade);
-        Teacher saved = teacherRepository.save(teacher);
 
-        return TeacherMapper.toDTO(saved);
+        // save teacher
+        Teacher savedTeacher = teacherRepository.save(teacher);
+
+        // =========================
+        // Create Account
+        // =========================
+
+        Account account = new Account();
+
+        account.setUsername(dto.getUsername());
+
+        account.setPassword(
+                passwordEncoder.encode(
+                        dto.getPassword()));
+
+        account.setRole(UserRole.TEACHER);
+
+        account.setEnabled(true);
+
+        account.setUser(savedTeacher);
+
+        accountRepository.save(account);
+
+        return TeacherMapper.toDTO(savedTeacher);
     }
 
-    // get List of teachers of class-grade
+    // =========================
+    // Get Teachers By Class Grade
+    // =========================
     public List<TeacherResponseDTO> getTeachersByClassGrade(long classGradeId) {
 
-        return this.teacherRepository.findByClassGrade_Id(classGradeId)
-                .stream() // loop int the list
-                .map(teacher -> TeacherMapper.toDTO(teacher)) // convert each teacher from entity to DTO
-                .toList(); // return them to list
+        return teacherRepository
+                .findByClassGrade_Id(classGradeId)
+                .stream()
+                .map(TeacherMapper::toDTO)
+                .toList();
     }
 
-    // get teachers by id
+    // =========================
+    // Get Teacher By ID DTO
+    // =========================
     public TeacherResponseDTO getById(UUID id) {
-        return this.teacherRepository.findById(id)
-                .map(teacher -> TeacherMapper.toDTO(teacher))
-                .orElseThrow(() -> new NotFoundException("Teacher not found"));
+
+        return teacherRepository.findById(id)
+                .map(TeacherMapper::toDTO)
+                .orElseThrow(() -> new NotFoundException(
+                        "Teacher not found"));
     }
 
-    // get teachers by id
+    // =========================
+    // Get Teacher Entity
+    // =========================
     public Teacher getTeacherById(UUID id) {
-        return this.teacherRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Teacher not found"));
-    }
 
+        return teacherRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException(
+                        "Teacher not found"));
+    }
 }
