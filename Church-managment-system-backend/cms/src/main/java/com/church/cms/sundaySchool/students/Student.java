@@ -24,22 +24,18 @@ import lombok.Setter;
 @Entity
 public class Student extends User {
 
-    
- 
     @Column(unique = true)
-    private String studentCode;         //كل طالب: ليه كود تابع لفصل واحد
-
+    private String studentCode; // كل طالب: ليه كود تابع لفصل واحد
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_grade_id")
-    private ClassGrade classGrade;              // الفصل اللي الطالب مسجل فيه
-    
+    private ClassGrade classGrade; // الفصل اللي الطالب مسجل فيه
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private List<Attendance> attendanceRecords;         // سجلات حضور الطالب
+    private List<Attendance> attendanceRecords; // سجلات حضور الطالب
 
     @PrePersist
     public void prePersist() {
-        this.setRole(UserRole.STUDENT);  // تحديد الدور تلقائي عند إنشاء الطالب
+        this.setRole(UserRole.STUDENT); // تحديد الدور تلقائي عند إنشاء الطالب
     }
 }

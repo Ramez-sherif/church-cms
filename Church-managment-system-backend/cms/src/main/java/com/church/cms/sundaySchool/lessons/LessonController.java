@@ -17,8 +17,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
-
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/lessons")
@@ -26,48 +24,49 @@ import lombok.RequiredArgsConstructor;
 public class LessonController {
     private final LessonService lessonService;
 
-    @PostMapping(consumes="multipart/form-data")
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<LessonResponseDTO> addLesson(
-        @Valid @ModelAttribute LessonRequestDTO lesson) {
-     
-        LessonResponseDTO saved= this.lessonService.addLesson(lesson);
-        return new ResponseEntity<>(saved,HttpStatus.CREATED);
+            @Valid @ModelAttribute LessonRequestDTO lesson) {
+
+        LessonResponseDTO saved = this.lessonService.addLesson(lesson);
+        return new ResponseEntity<>(saved, HttpStatus.CREATED);
     }
+
     @GetMapping("/{id}")
     public ResponseEntity<LessonResponseDTO> getLesson(@PathVariable UUID id) {
-     return ResponseEntity.ok(this.lessonService.getLessonById(id));
+        return ResponseEntity.ok(this.lessonService.getLessonById(id));
     }
-    //get lessons by class grade
+    // get lessons by class grade
 
     @GetMapping("class/{classgradeId}")
     public ResponseEntity<List<LessonResponseDTO>> getLessonsByClassGrade(
-        @PathVariable @Positive(message="معرف الصف يجب أن يكون رقمًا موجبًا") long classgradeId) {
-       
+            @PathVariable @Positive(message = "Class grade id must be positive") long classgradeId) {
+
         return ResponseEntity.ok(this.lessonService.getLessonsByClassGrade(classgradeId));
     }
-    
-    //get last lesson by class grade 
-    //GET /class/{id}/last-lesson
+
+    // get last lesson by class grade
+    // GET /class/{id}/last-lesson
 
     @GetMapping("class/{classgradeId}/last-lesson")
     public ResponseEntity<LessonResponseDTO> getLastLessonByClassGrade(
-        @PathVariable @Positive(message="معرف الصف يجب أن يكون رقمًا موجبًا") long classgradeId) {
-       
+            @PathVariable @Positive(message = "Class grade id must be positive") long classgradeId) {
+
         return ResponseEntity.ok(this.lessonService.getLastLessonByClassGrade(classgradeId));
     }
-    
+
 }
 /*
-POST->  /lessons
-{
-  "name": "Bible Lesson",
-  "title": "Noah Ark",
-  "date": "2024-10-01",
-  "pdfFilePath": "/files/noah.pdf",
-  "teacherId": "UUID-HERE",
-  "classGradeId": 1
-}
-
-GET /lessons/class/{classGradeId}
-
-*/
+ * POST-> /lessons
+ * {
+ * "name": "Bible Lesson",
+ * "title": "Noah Ark",
+ * "date": "2024-10-01",
+ * "pdfFilePath": "/files/noah.pdf",
+ * "teacherId": "UUID-HERE",
+ * "classGradeId": 1
+ * }
+ * 
+ * GET /lessons/class/{classGradeId}
+ * 
+ */

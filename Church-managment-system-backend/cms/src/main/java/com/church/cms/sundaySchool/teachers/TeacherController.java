@@ -17,7 +17,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/teachers")
@@ -27,36 +26,36 @@ public class TeacherController {
 
     @PostMapping
     public ResponseEntity<TeacherResponseDTO> addTeacher(@Valid @RequestBody TeacherRequestDTO dto) {
-        TeacherResponseDTO saved= this.teacherService.addTeacher(dto);
-        return new ResponseEntity<>(saved, HttpStatus.CREATED) ;
+        return new ResponseEntity<>(teacherService.addTeacher(dto), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TeacherResponseDTO> getTeacher(@PathVariable  UUID id) {
-        return  ResponseEntity.ok(this.teacherService.getById(id));
+    public ResponseEntity<TeacherResponseDTO> getTeacher(@PathVariable UUID id) {
+        return ResponseEntity.ok(this.teacherService.getById(id));
     }
-     @GetMapping("/class/{classGradeId}")
-      public ResponseEntity<List<TeacherResponseDTO>> getTeachersByClassGrade(
-        @PathVariable @Positive(message="معرف الصف يجب أن يكون رقمًا موجبًا") long classGradeId) {
-        
-            return  ResponseEntity.ok(this.teacherService.getTeachersByClassGrade(classGradeId));
+
+    @GetMapping("/class/{classGradeId}")
+    public ResponseEntity<List<TeacherResponseDTO>> getTeachersByClassGrade(
+            @PathVariable @Positive(message = "Class grade id must be positive") long classGradeId) {
+
+        return ResponseEntity.ok(this.teacherService.getTeachersByClassGrade(classGradeId));
     }
-    
+
 }
 /*
-POST->  /teachers
-{
-  "firstName": "Michael",
-  "lastName": "Samy",
-  "birthDate": "1990-03-15",
-  "phoneNumber": "01122223333",
-  "address": "Giza",
-  "serviceRole": "Teacher",
-  "classGradeId": 1
-}
-
-GET->  /teachers/class/{classGradeId}
-
-
-
-*/
+ * POST-> /teachers
+ * {
+ * "firstName": "Michael",
+ * "lastName": "Samy",
+ * "birthDate": "1990-03-15",
+ * "phoneNumber": "01122223333",
+ * "address": "Giza",
+ * "serviceRole": "Teacher",
+ * "classGradeId": 1
+ * }
+ * 
+ * GET-> /teachers/class/{classGradeId}
+ * 
+ * 
+ * 
+ */

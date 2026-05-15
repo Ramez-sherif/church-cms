@@ -8,4 +8,10 @@ import lombok.Setter;
 public class ClassGradeResponseDTO {
     private Long id;
     private String name;
+
+    private Long stageGroupId;
+    private String stageGroupName;
+
+    private Long stageId;
+    private String stageName;
 }

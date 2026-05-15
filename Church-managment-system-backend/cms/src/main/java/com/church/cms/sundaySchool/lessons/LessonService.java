@@ -9,13 +9,14 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.church.cms.auth.AuthorizationService;
+import com.church.cms.auth.SecurityUtils;
 import com.church.cms.shared.exceptions.BadRequestException;
 import com.church.cms.shared.exceptions.ConflictException;
 import com.church.cms.shared.exceptions.NotFoundException;
 import com.church.cms.sundaySchool.grades.ClassGrade;
 import com.church.cms.sundaySchool.grades.ClassGradeService;
 import com.church.cms.sundaySchool.teachers.Teacher;
-import com.church.cms.sundaySchool.teachers.TeacherService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,96 +25,221 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class LessonService {
-    private final LessonRepository lessonRepository;
-    private final TeacherService teacherService;
-    private final ClassGradeService classGradeService;
 
-    //Request DTO -> entity ,Entity -> DB , Entity -> Response DTO , Response DTO -> client 
+        private final LessonRepository lessonRepository;
 
-    public LessonResponseDTO addLesson(LessonRequestDTO lessonRequestDTO){
+        private final ClassGradeService classGradeService;
 
-        if (lessonRequestDTO.getPdf() == null) {
-            throw new BadRequestException("PDF file is required");
+        private final SecurityUtils securityUtils;
+
+        private final AuthorizationService authorizationService;
+
+        // =========================
+        // Add Lesson
+        // =========================
+        public LessonResponseDTO addLesson(
+                        LessonRequestDTO lessonRequestDTO) {
+
+                // =========================
+                // Validate PDF Exists
+                // =========================
+                if (lessonRequestDTO.getPdf() == null) {
+
+                        throw new BadRequestException(
+                                        "PDF file is required");
+                }
+
+                // =========================
+                // Validate File Size
+                // 10 MB max
+                // =========================
+                if (lessonRequestDTO
+                                .getPdf()
+                                .getSize() > 10_000_000) {
+
+                        throw new BadRequestException(
+                                        "File size too large");
+                }
+
+                // =========================
+                // Validate File Extension
+                // =========================
+                String originalFileName = lessonRequestDTO
+                                .getPdf()
+                                .getOriginalFilename();
+
+                if (originalFileName == null
+                                || !originalFileName
+                                                .toLowerCase()
+                                                .endsWith(".pdf")) {
+
+                        throw new BadRequestException(
+                                        "Only PDF files are allowed");
+                }
+
+                // =========================
+                // Validate Content Type
+                // =========================
+                if (!lessonRequestDTO
+                                .getPdf()
+                                .getContentType()
+                                .equals("application/pdf")) {
+
+                        throw new BadRequestException(
+                                        "Only PDF files are allowed");
+                }
+
+                // =========================
+                // Check Duplicate Lesson
+                // =========================
+                if (lessonRepository.existsByDateAndClassGrade_Id(
+                                lessonRequestDTO.getDate(),
+                                lessonRequestDTO.getClassGradeId())) {
+
+                        throw new ConflictException(
+                                        "There is already a lesson for this class on this date");
+                }
+
+                // =========================
+                // Create Unique File Name
+                // =========================
+                String fileName = UUID.randomUUID()
+                                + "_"
+                                + originalFileName;
+
+                // =========================
+                // Upload Directory
+                // =========================
+                Path uploadPath = Paths.get("uploads/lessons");
+
+                // create folders
+                try {
+
+                        Files.createDirectories(uploadPath);
+
+                } catch (IOException ex) {
+
+                        throw new BadRequestException(
+                                        "Could not create upload directory");
+                }
+
+                // =========================
+                // Final File Path
+                // =========================
+                Path filePath = uploadPath.resolve(fileName);
+
+                // =========================
+                // Save File
+                // =========================
+                try {
+
+                        Files.copy(
+                                        lessonRequestDTO
+                                                        .getPdf()
+                                                        .getInputStream(),
+                                        filePath);
+
+                } catch (IOException ex) {
+
+                        throw new BadRequestException(
+                                        "Failed to save PDF file");
+                }
+
+                // =========================
+                // Get Class Grade
+                // =========================
+                ClassGrade classGrade = classGradeService.getClassGradeById(
+                                lessonRequestDTO.getClassGradeId());
+
+                // =========================
+                // Authorization
+                // =========================
+                authorizationService.assertTeacherOwnsClass(
+                                classGrade.getId());
+
+                // =========================
+                // Current Logged-in Teacher
+                // =========================
+                Teacher teacher = securityUtils.getCurrentTeacher();
+
+                // =========================
+                // Create Lesson Entity
+                // =========================
+                Lesson lesson = LessonMapper.toEntity(
+                                lessonRequestDTO,
+                                teacher,
+                                classGrade,
+                                "/uploads/lessons/" + fileName);
+
+                // =========================
+                // Save Lesson
+                // =========================
+                lessonRepository.save(lesson);
+
+                // =========================
+                // Return DTO
+                // =========================
+                return LessonMapper.toDTO(lesson);
         }
-            //validate pdf file
-        if (!lessonRequestDTO.getPdf().getContentType().equals("application/pdf")) {
-            throw new BadRequestException("Only PDF files are allowed");
+
+        // =========================
+        // Get Lessons By Class Grade
+        // =========================
+        public List<LessonResponseDTO> getLessonsByClassGrade(Long classGradeId) {
+
+                authorizationService.assertTeacherOwnsClass(
+                                classGradeId);
+
+                return lessonRepository
+                                .findByClassGrade_Id(classGradeId)
+                                .stream()
+                                .map(LessonMapper::toDTO)
+                                .toList();
         }
 
-        if(this.lessonRepository.existsByDateAndClassGrade_Id(lessonRequestDTO.getDate(), lessonRequestDTO.getClassGradeId())){
-            throw new ConflictException("There is already a lesson for this class on this date");
+        // =========================
+        // Get Last Lesson
+        // =========================
+        public LessonResponseDTO getLastLessonByClassGrade(Long classGradeId) {
+
+                authorizationService.assertTeacherOwnsClass(
+                                classGradeId);
+
+                return lessonRepository
+                                .findTopByClassGrade_IdOrderByDateDesc(
+                                                classGradeId)
+                                .map(LessonMapper::toDTO)
+                                .orElseThrow(() -> new NotFoundException(
+                                                "No lessons found for this class grade"));
         }
 
-        // save pdf file to server and get path:
+        // =========================
+        // Get Lesson DTO By Id
+        // =========================
+        public LessonResponseDTO getLessonById(UUID lessonId) {
 
-        // create unique file name://to avoid duplicate file names
-        String fileName= UUID.randomUUID()+"_"+lessonRequestDTO.getPdf().getOriginalFilename(); 
-        
-        // specify your upload directory
-        Path uploadPath= Paths.get("uploads/lessons"); 
-        
-        //create directories if not exist
-        try {
-            Files.createDirectories(uploadPath);        
-        } catch (IOException ex) {
-            throw new BadRequestException("Could not create upload directory");
+                Lesson lesson = lessonRepository.findById(lessonId)
+                                .orElseThrow(() -> new NotFoundException(
+                                                "Lesson not found"));
+
+                authorizationService.assertTeacherOwnsClass(
+                                lesson.getClassGrade().getId());
+
+                return LessonMapper.toDTO(lesson);
         }
 
-        //create file path with file name
-        Path filePath= uploadPath.resolve(fileName);   
+        // =========================
+        // Get Lesson Entity By Id
+        // =========================
+        public Lesson getById(UUID lessonId) {
 
-        //save the file to the server from windows
-        try {
-            Files.copy(lessonRequestDTO.getPdf().getInputStream(), filePath); 
-        } catch (IOException ex) {
-            throw new BadRequestException("Failed to save PDF file");
+                Lesson lesson = lessonRepository.findById(lessonId)
+                                .orElseThrow(() -> new NotFoundException(
+                                                "Lesson not found"));
+
+                authorizationService.assertTeacherOwnsClass(
+                                lesson.getClassGrade().getId());
+
+                return lesson;
         }
-
-        //Get Teacher and ClassGrade obj:
-        Teacher teacher = this.teacherService.getTeacherById(lessonRequestDTO.getTeacherId());
-        ClassGrade classGrade= this.classGradeService.getClassGradeById(lessonRequestDTO.getClassGradeId());
-
-        //Create Lesson obj:
-        Lesson lesson= LessonMapper.toEntity(
-            lessonRequestDTO,
-            teacher, 
-            classGrade,
-            "/uploads/lessons/" + fileName);
-
-        //save lesson in DB:
-        this.lessonRepository.save(lesson);
-         
-        //convert Entity to DTo
-        return LessonMapper.toDTO(lesson);
-    }
-
-    //get list of lesson by class grade
-    public List<LessonResponseDTO> getLessonsByClassGrade(Long classGradeId){
-       
-        return  this.lessonRepository.findByClassGrade_Id(classGradeId)
-        .stream()
-        .map(lesson->LessonMapper.toDTO(lesson))
-        .toList();
-    }
-
-
-    //get last lesson by class grade
-    public LessonResponseDTO getLastLessonByClassGrade(Long classGradeId){
-       
-        return this.lessonRepository.findTopByClassGrade_IdOrderByDateDesc(classGradeId)
-        .map(lesson-> LessonMapper.toDTO(lesson))
-        .orElseThrow(()-> new NotFoundException("No lessons found for this class grade"));
-    }
-    public LessonResponseDTO getLessonById(UUID lessonId){
-       
-        return this.lessonRepository.findById(lessonId)
-        .map(lesson-> LessonMapper.toDTO(lesson))
-        .orElseThrow(()->new NotFoundException("Lesson not found"));
-    }
-    
-    public Lesson getById(UUID lessonId){
-       
-        return this.lessonRepository.findById(lessonId)
-        .orElseThrow(()->new NotFoundException("Lesson not found"));
-    }
 }
