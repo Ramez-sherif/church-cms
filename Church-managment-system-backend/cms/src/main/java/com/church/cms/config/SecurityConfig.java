@@ -92,21 +92,31 @@ public class SecurityConfig {
 
                 http
 
-                                // disable csrf
+                                // =========================
+                                // Disable CSRF
+                                // =========================
                                 .csrf(csrf -> csrf.disable())
 
-                                // enable cors
+                                // =========================
+                                // Enable CORS
+                                // =========================
                                 .cors(Customizer.withDefaults())
 
-                                // stateless api
+                                // =========================
+                                // Stateless API
+                                // =========================
                                 .sessionManagement(session -> session.sessionCreationPolicy(
                                                 SessionCreationPolicy.STATELESS))
 
-                                // auth provider
+                                // =========================
+                                // Authentication Provider
+                                // =========================
                                 .authenticationProvider(
                                                 authenticationProvider())
 
-                                // security exception handlers
+                                // =========================
+                                // Exception Handlers
+                                // =========================
                                 .exceptionHandling(ex -> ex
 
                                                 .authenticationEntryPoint(
@@ -115,38 +125,43 @@ public class SecurityConfig {
                                                 .accessDeniedHandler(
                                                                 jwtAccessDeniedHandler))
 
-                                // routes authorization
+                                // =========================
+                                // Routes Authorization
+                                // =========================
                                 .authorizeHttpRequests(auth -> auth
 
-                                                // public endpoints
+                                                // =========================
+                                                // Public Endpoints
+                                                // =========================
                                                 .requestMatchers(
                                                                 "/auth/**")
                                                 .permitAll()
 
-                                                // admin only
+                                                // =========================
+                                                // Teachers + Fathers
+                                                // =========================
                                                 .requestMatchers(
                                                                 "/teachers/**",
                                                                 "/class-grades/**",
                                                                 "/stages/**",
                                                                 "/stage-groups/**",
-                                                                "/fathers/**")
-                                                .hasRole("ADMIN")
-
-                                                // teacher + father + admin
-                                                .requestMatchers(
+                                                                "/fathers/**",
                                                                 "/students/**",
                                                                 "/lessons/**",
                                                                 "/attendance/**")
                                                 .hasAnyRole(
                                                                 "TEACHER",
-                                                                "FATHER",
-                                                                "ADMIN")
+                                                                "FATHER")
 
-                                                // everything else
+                                                // =========================
+                                                // Everything Else
+                                                // =========================
                                                 .anyRequest()
                                                 .authenticated())
 
-                                // jwt filter
+                                // =========================
+                                // JWT Filter
+                                // =========================
                                 .addFilterBefore(
                                                 jwtAuthFilter,
                                                 UsernamePasswordAuthenticationFilter.class);

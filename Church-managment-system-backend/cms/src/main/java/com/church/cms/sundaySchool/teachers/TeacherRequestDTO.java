@@ -2,18 +2,25 @@ package com.church.cms.sundaySchool.teachers;
 
 import java.time.LocalDate;
 
+import com.church.cms.sundaySchool.common.ServiceRole;
+
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 public class TeacherRequestDTO {
+
+    // =========================
+    // Basic Info
+    // =========================
 
     @NotBlank(message = "First name cannot be empty")
     @Size(min = 2, max = 50)
@@ -34,8 +41,16 @@ public class TeacherRequestDTO {
     @Size(max = 255)
     private String address;
 
-    @NotBlank(message = "Service role cannot be empty")
-    private String serviceRole;
+    // =========================
+    // Church Service Role
+    // =========================
+
+    @NotNull(message = "Service role is required")
+    private ServiceRole serviceRole;
+
+    // =========================
+    // Responsible Class
+    // =========================
 
     @Positive(message = "Class grade id must be positive")
     private long classGradeId;

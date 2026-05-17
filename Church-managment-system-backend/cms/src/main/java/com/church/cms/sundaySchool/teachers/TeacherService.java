@@ -22,91 +22,114 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class TeacherService {
 
-    private final TeacherRepository teacherRepository;
+        private final TeacherRepository teacherRepository;
 
-    private final ClassGradeService classGradeService;
+        private final ClassGradeService classGradeService;
 
-    private final AccountRepository accountRepository;
+        private final AccountRepository accountRepository;
 
-    private final PasswordEncoder passwordEncoder;
+        private final PasswordEncoder passwordEncoder;
 
-    // =========================
-    // Add Teacher
-    // =========================
-    public TeacherResponseDTO addTeacher(
-            TeacherRequestDTO dto) {
+        // =========================
+        // Add Teacher
+        // =========================
+        public TeacherResponseDTO addTeacher(
+                        TeacherRequestDTO dto) {
 
-        // username exists
-        if (accountRepository.existsByUsername(
-                dto.getUsername())) {
+                // =========================
+                // Username Exists
+                // =========================
+                if (accountRepository.existsByUsername(
+                                dto.getUsername())) {
 
-            throw new ConflictException(
-                    "Username already exists");
+                        throw new ConflictException(
+                                        "Username already exists");
+                }
+
+                // =========================
+                // Get Class Grade
+                // =========================
+                ClassGrade grade = classGradeService
+                                .getClassGradeById(
+                                                dto.getClassGradeId());
+
+                // =========================
+                // Create Teacher Entity
+                // =========================
+                Teacher teacher = TeacherMapper.toEntity(
+                                dto,
+                                grade);
+
+                // =========================
+                // Save Teacher
+                // =========================
+                Teacher savedTeacher = teacherRepository.save(
+                                teacher);
+
+                // =========================
+                // Create Account
+                // =========================
+                Account account = new Account();
+
+                account.setUsername(
+                                dto.getUsername());
+
+                account.setPassword(
+                                passwordEncoder.encode(
+                                                dto.getPassword()));
+
+                // =========================
+                // User Type
+                // =========================
+                account.setRole(
+                                UserRole.TEACHER);
+
+                account.setEnabled(true);
+
+                account.setUser(savedTeacher);
+
+                accountRepository.save(account);
+
+                return TeacherMapper.toDTO(
+                                savedTeacher);
         }
 
-        // get class grade
-        ClassGrade grade = classGradeService.getClassGradeById(
-                dto.getClassGradeId());
+        // =========================
+        // Get Teachers By Class Grade
+        // =========================
+        public List<TeacherResponseDTO> getTeachersByClassGrade(
+                        long classGradeId) {
 
-        // create teacher entity
-        Teacher teacher = TeacherMapper.toEntity(dto, grade);
-
-        // save teacher
-        Teacher savedTeacher = teacherRepository.save(teacher);
+                return teacherRepository
+                                .findByClassGrade_Id(
+                                                classGradeId)
+                                .stream()
+                                .map(TeacherMapper::toDTO)
+                                .toList();
+        }
 
         // =========================
-        // Create Account
+        // Get Teacher By ID DTO
         // =========================
+        public TeacherResponseDTO getById(
+                        UUID id) {
 
-        Account account = new Account();
+                return teacherRepository
+                                .findById(id)
+                                .map(TeacherMapper::toDTO)
+                                .orElseThrow(() -> new NotFoundException(
+                                                "Teacher not found"));
+        }
 
-        account.setUsername(dto.getUsername());
+        // =========================
+        // Get Teacher Entity
+        // =========================
+        public Teacher getTeacherById(
+                        UUID id) {
 
-        account.setPassword(
-                passwordEncoder.encode(
-                        dto.getPassword()));
-
-        account.setRole(UserRole.TEACHER);
-
-        account.setEnabled(true);
-
-        account.setUser(savedTeacher);
-
-        accountRepository.save(account);
-
-        return TeacherMapper.toDTO(savedTeacher);
-    }
-
-    // =========================
-    // Get Teachers By Class Grade
-    // =========================
-    public List<TeacherResponseDTO> getTeachersByClassGrade(long classGradeId) {
-
-        return teacherRepository
-                .findByClassGrade_Id(classGradeId)
-                .stream()
-                .map(TeacherMapper::toDTO)
-                .toList();
-    }
-
-    // =========================
-    // Get Teacher By ID DTO
-    // =========================
-    public TeacherResponseDTO getById(UUID id) {
-
-        return teacherRepository.findById(id)
-                .map(TeacherMapper::toDTO)
-                .orElseThrow(() -> new NotFoundException(
-                        "Teacher not found"));
-    }
-
-    // =========================
-    // Get Teacher Entity
-    // =========================
-    public Teacher getTeacherById(UUID id) {
-
-        return teacherRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(
-                        "Teacher not found"));
-    }
+                return teacherRepository
+                                .findById(id)
+                                .orElseThrow(() -> new NotFoundException(
+                                                "Teacher not found"));
+        }
 }

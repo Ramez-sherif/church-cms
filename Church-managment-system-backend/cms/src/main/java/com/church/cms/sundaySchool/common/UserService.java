@@ -20,17 +20,16 @@ public class UserService {
     private final UserRepository userRepository;
 
     public User getUserById(UUID id) {
-    return userRepository.findById(id)
-        .orElseThrow(() -> new NotFoundException("User not found"));
+        return userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found"));
     }
 
-    public List<User> getAllTeachers(){
+    public List<User> getAllTeachers() {
         return userRepository.findByRole(UserRole.TEACHER);
     }
 
-    public List<User> getAllStudents(){
+    public List<User> getAllStudents() {
         return userRepository.findByRole(UserRole.STUDENT);
     }
 
-    
 }

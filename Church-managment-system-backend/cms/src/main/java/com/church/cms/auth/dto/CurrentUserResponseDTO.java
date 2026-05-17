@@ -12,4 +12,6 @@ public class CurrentUserResponseDTO {
     private String role;
 
     private String fullName;
+
+    private String serviceRole;
 }
