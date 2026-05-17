@@ -1,11 +1,11 @@
 package com.church.cms.auth;
 
 import org.springframework.security.core.Authentication;
-
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import org.springframework.stereotype.Component;
 
+import com.church.cms.sundaySchool.common.ServiceRole;
+import com.church.cms.sundaySchool.common.UserRole;
 import com.church.cms.sundaySchool.fathers.Father;
 import com.church.cms.sundaySchool.teachers.Teacher;
 
@@ -15,71 +15,122 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityUtils {
 
-    private final AccountRepository accountRepository;
+        private final AccountRepository accountRepository;
 
-    // =========================
-    // Current Account
-    // =========================
-    public Account getCurrentAccount() {
+        // =========================
+        // Current Account
+        // =========================
+        public Account getCurrentAccount() {
 
-        Authentication authentication = SecurityContextHolder
-                .getContext()
-                .getAuthentication();
+                Authentication authentication = SecurityContextHolder
+                                .getContext()
+                                .getAuthentication();
 
-        String username = authentication.getName();
+                String username = authentication.getName();
 
-        return accountRepository
-                .findByUsername(username)
-                .orElseThrow(() -> new RuntimeException(
-                        "Account not found"));
-    }
+                return accountRepository
+                                .findByUsername(username)
+                                .orElseThrow(() -> new RuntimeException(
+                                                "Account not found"));
+        }
 
-    // =========================
-    // Current Teacher
-    // =========================
-    public Teacher getCurrentTeacher() {
+        // =========================
+        // Current User Role
+        // =========================
+        public UserRole getCurrentRole() {
 
-        return (Teacher) getCurrentAccount()
-                .getUser();
-    }
+                return getCurrentAccount()
+                                .getRole();
+        }
 
-    // =========================
-    // Current Father
-    // =========================
-    public Father getCurrentFather() {
+        // =========================
+        // Current Teacher
+        // =========================
+        public Teacher getCurrentTeacher() {
 
-        return (Father) getCurrentAccount()
-                .getUser();
-    }
+                return (Teacher) getCurrentAccount()
+                                .getUser();
+        }
 
-    // =========================
-    // Current Role
-    // =========================
-    public String getCurrentRole() {
+        // =========================
+        // Current Father
+        // =========================
+        public Father getCurrentFather() {
 
-        return getCurrentAccount()
-                .getRole()
-                .name();
-    }
+                return (Father) getCurrentAccount()
+                                .getUser();
+        }
 
-    // =========================
-    // Role Helpers
-    // =========================
-    public boolean isAdmin() {
+        // =========================
+        // Current Service Role
+        // =========================
+        public ServiceRole getCurrentServiceRole() {
 
-        return getCurrentRole()
-                .equals("ADMIN");
-    }
+                Teacher teacher = getCurrentTeacher();
 
-    public boolean isTeacher() {
+                return teacher.getServiceRole();
+        }
 
-        return getCurrentRole()
-                .equals("TEACHER");
-    }
+        // =========================
+        // User Type Helpers
+        // =========================
+        public boolean isTeacher() {
 
-    public boolean isFather() {
+                return getCurrentRole() == UserRole.TEACHER;
+        }
 
-        return getCurrentRole()
-                .equals("FATHER");
-    }
+        public boolean isFather() {
+
+                return getCurrentRole() == UserRole.FATHER;
+        }
+
+        public boolean isStudent() {
+
+                return getCurrentRole() == UserRole.STUDENT;
+        }
+
+        // =========================
+        // Service Role Helpers
+        // =========================
+        public boolean isGeneralAdmin() {
+
+                return isTeacher()
+                                && getCurrentServiceRole() == ServiceRole.GENERAL_ADMIN;
+        }
+
+        public boolean isStageAdmin() {
+
+                return isTeacher()
+                                && getCurrentServiceRole() == ServiceRole.STAGE_ADMIN;
+        }
+
+        public boolean isStageLeader() {
+
+                return isTeacher()
+                                && getCurrentServiceRole() == ServiceRole.STAGE_LEADER;
+        }
+
+        public boolean isAssistantStageLeader() {
+
+                return isTeacher()
+                                && getCurrentServiceRole() == ServiceRole.ASSISTANT_STAGE_LEADER;
+        }
+
+        public boolean isStageGroupLeader() {
+
+                return isTeacher()
+                                && getCurrentServiceRole() == ServiceRole.STAGE_GROUP_LEADER;
+        }
+
+        public boolean isAssistantStageGroupLeader() {
+
+                return isTeacher()
+                                && getCurrentServiceRole() == ServiceRole.ASSISTANT_STAGE_GROUP_LEADER;
+        }
+
+        public boolean isClassServant() {
+
+                return isTeacher()
+                                && getCurrentServiceRole() == ServiceRole.CLASS_SERVANT;
+        }
 }

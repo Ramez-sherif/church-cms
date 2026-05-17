@@ -33,7 +33,10 @@ public class AdminSeeder {
                 admin.setPassword(
                         passwordEncoder.encode("123456"));
 
-                admin.setRole(UserRole.ADMIN);
+                // =========================
+                // User Type
+                // =========================
+                admin.setRole(UserRole.TEACHER);
 
                 admin.setEnabled(true);
 

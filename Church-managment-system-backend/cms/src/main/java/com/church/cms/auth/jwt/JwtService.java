@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.church.cms.auth.Account;
+import com.church.cms.sundaySchool.teachers.Teacher;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -26,7 +27,8 @@ public class JwtService {
             @Value("${app.jwt.expMinutes}") long expMinutes) {
 
         this.signingKey = Keys.hmacShaKeyFor(
-                secret.getBytes(StandardCharsets.UTF_8));
+                secret.getBytes(
+                        StandardCharsets.UTF_8));
 
         this.expMillis = expMinutes * 60_000;
     }
@@ -34,25 +36,61 @@ public class JwtService {
     // =========================
     // Generate Token
     // =========================
-    public String generateToken(Account account) {
+    public String generateToken(
+            Account account) {
 
         Date now = new Date();
 
-        Date expirationDate = new Date(now.getTime() + expMillis);
+        Date expirationDate = new Date(
+                now.getTime()
+                        + expMillis);
+
+        // =========================
+        // Service Role
+        // =========================
+        String serviceRole = null;
+
+        if (account.getUser() instanceof Teacher teacher
+                && teacher.getServiceRole() != null) {
+
+            serviceRole = teacher.getServiceRole()
+                    .name();
+        }
 
         return Jwts.builder()
 
-                // username as subject
-                .subject(account.getUsername())
+                // =========================
+                // Username
+                // =========================
+                .subject(
+                        account.getUsername())
 
-                // extra claims
-                .claim("role", account.getRole().name())
+                // =========================
+                // User Role
+                // =========================
+                .claim(
+                        "role",
+                        account.getRole()
+                                .name())
 
-                // dates
+                // =========================
+                // Service Role
+                // =========================
+                .claim(
+                        "serviceRole",
+                        serviceRole)
+
+                // =========================
+                // Dates
+                // =========================
                 .issuedAt(now)
-                .expiration(expirationDate)
 
-                // signature
+                .expiration(
+                        expirationDate)
+
+                // =========================
+                // Signature
+                // =========================
                 .signWith(signingKey)
 
                 .compact();
@@ -61,19 +99,35 @@ public class JwtService {
     // =========================
     // Extract Username
     // =========================
-    public String extractUsername(String token) {
+    public String extractUsername(
+            String token) {
 
         return extractAllClaims(token)
                 .getSubject();
     }
 
     // =========================
-    // Extract Role
+    // Extract User Role
     // =========================
-    public String extractRole(String token) {
+    public String extractRole(
+            String token) {
 
         return extractAllClaims(token)
-                .get("role", String.class);
+                .get(
+                        "role",
+                        String.class);
+    }
+
+    // =========================
+    // Extract Service Role
+    // =========================
+    public String extractServiceRole(
+            String token) {
+
+        return extractAllClaims(token)
+                .get(
+                        "serviceRole",
+                        String.class);
     }
 
     // =========================
@@ -85,14 +139,16 @@ public class JwtService {
 
         String username = extractUsername(token);
 
-        return username.equals(userDetails.getUsername())
+        return username.equals(
+                userDetails.getUsername())
                 && !isTokenExpired(token);
     }
 
     // =========================
     // Check Expiration
     // =========================
-    private boolean isTokenExpired(String token) {
+    private boolean isTokenExpired(
+            String token) {
 
         return extractExpiration(token)
                 .before(new Date());
@@ -101,7 +157,8 @@ public class JwtService {
     // =========================
     // Extract Expiration
     // =========================
-    private Date extractExpiration(String token) {
+    private Date extractExpiration(
+            String token) {
 
         return extractAllClaims(token)
                 .getExpiration();
@@ -110,11 +167,13 @@ public class JwtService {
     // =========================
     // Parse Claims
     // =========================
-    private Claims extractAllClaims(String token) {
+    private Claims extractAllClaims(
+            String token) {
 
         return Jwts.parser()
 
-                .verifyWith((javax.crypto.SecretKey) signingKey)
+                .verifyWith(
+                        (javax.crypto.SecretKey) signingKey)
 
                 .build()
 
