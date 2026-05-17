@@ -201,7 +201,7 @@ const Lessons = () => {
 
         <button
           onClick={() =>
-            navigate('/add-lesson')
+            navigate('/dashboard/add-lesson')
           }
           style={{
             display: 'flex',
