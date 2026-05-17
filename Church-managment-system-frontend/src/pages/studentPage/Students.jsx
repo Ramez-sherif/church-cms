@@ -63,7 +63,7 @@ const Students = () => {
           <p style={{ color: '#64748b', fontSize: '0.875rem' }}>إدارة بيانات الطلاب المسجلين في المراحل الدراسية</p>
         </div>
         <button
-          onClick={() => navigate('/add-student')}
+          onClick={() => navigate('/dashboard/add-student')}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -115,7 +115,7 @@ const Students = () => {
             value={selectedGradeId}
             onChange={(e) => {
               setSelectedGradeId(e.target.value);
-              if (urlClassGradeId) navigate(`/class-grades/${e.target.value}/students`);
+              if (urlClassGradeId) navigate(`/dashboard/class-grades/${e.target.value}/students`);
             }}
             style={{
               padding: '0.625rem 1rem',

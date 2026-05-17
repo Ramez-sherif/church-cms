@@ -157,7 +157,7 @@ const AddAttendance = () => {
 
       setTimeout(() => {
 
-        navigate('/attendance');
+        navigate('/dashboard/attendance');
 
       }, 1500);
 
@@ -228,7 +228,7 @@ const AddAttendance = () => {
 
           <button
             onClick={() =>
-              navigate('/attendance')
+              navigate('/dashboard/attendance')
             }
             style={{
               display: 'flex',

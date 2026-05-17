@@ -172,7 +172,7 @@ const Teachers = () => {
 
         <button
           onClick={() =>
-            navigate('/add-teacher')
+            navigate('/dashboard/add-teacher')
           }
           style={{
             display: 'flex',

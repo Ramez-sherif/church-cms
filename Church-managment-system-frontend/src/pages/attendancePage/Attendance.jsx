@@ -55,7 +55,7 @@ const Attendance = () => {
           <p style={{ color: '#64748b', fontSize: '0.875rem' }}>متابعة حضور الطلاب في الدروس المختلفة</p>
         </div>
         <button
-          onClick={() => navigate(`/add-attendance/${selectedGradeId || 1}`)}
+          onClick={() => navigate(`/dashboard/add-attendance/${selectedGradeId || 1}`)}
           style={{
             display: 'flex',
             alignItems: 'center',
