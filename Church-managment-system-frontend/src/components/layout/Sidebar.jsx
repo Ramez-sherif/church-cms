@@ -14,12 +14,12 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
   const user = useAuthStore((state) => state.user);
 
   const navItems = [
-    { name: 'الرئيسية', path: '/home', icon: Home, roles: ['ADMIN', 'TEACHER', 'FATHER'] },
-    { name: 'المراحل الدراسية', path: '/class-grades', icon: GraduationCap, roles: ['ADMIN', 'TEACHER'] },
-    { name: 'المعلمين', path: '/teachers', icon: Users, roles: ['ADMIN'] },
-    { name: 'الطلاب', path: '/students', icon: Contact, roles: ['ADMIN', 'TEACHER'] },
-    { name: 'المنهج', path: '/lessons', icon: BookOpen, roles: ['ADMIN', 'TEACHER', 'FATHER'] },
-    { name: 'الخادمين', path: '/attendance', icon: UserCheck, roles: ['ADMIN', 'TEACHER', 'FATHER'] },
+    { name: 'الرئيسية', path: '/dashboard/home', icon: Home, roles: ['ADMIN', 'TEACHER', 'FATHER'] },
+    { name: 'المراحل الدراسية', path: '/dashboard/class-grades', icon: GraduationCap, roles: ['ADMIN', 'TEACHER'] },
+    { name: 'المعلمين', path: '/dashboard/teachers', icon: Users, roles: ['ADMIN'] },
+    { name: 'الطلاب', path: '/dashboard/students', icon: Contact, roles: ['ADMIN', 'TEACHER'] },
+    { name: 'المنهج', path: '/dashboard/lessons', icon: BookOpen, roles: ['ADMIN', 'TEACHER', 'FATHER'] },
+    { name: 'الغياب والحضور', path: '/dashboard/attendance', icon: UserCheck, roles: ['ADMIN', 'TEACHER', 'FATHER'] },
   ];
 
   const filteredItems = navItems.filter(item =>

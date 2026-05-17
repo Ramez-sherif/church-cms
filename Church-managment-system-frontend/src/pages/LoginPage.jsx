@@ -35,7 +35,7 @@ const LoginPage = () => {
       const userResponse = await axiosInstance.get('/auth/me');
       setUser(userResponse.data);
 
-      navigate('/home');
+      navigate('/dashboard/home');
     } catch (err) {
       setError('خطأ في اسم المستخدم أو كلمة المرور');
       console.error(err);

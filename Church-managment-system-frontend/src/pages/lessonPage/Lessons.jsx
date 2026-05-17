@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
+import {
+  useNavigate,
+  useSearchParams
+} from 'react-router-dom';
 
 import {
   Search,
@@ -43,6 +46,15 @@ const Lessons = () => {
   const navigate = useNavigate();
 
   // =========================
+  // Query Params
+  // =========================
+  const [searchParams] =
+    useSearchParams();
+
+  const classGradeIdFromUrl =
+    searchParams.get('classGradeId');
+
+  // =========================
   // Fetch Grades
   // =========================
   useEffect(() => {
@@ -57,7 +69,11 @@ const Lessons = () => {
         setGrades(data);
 
         if (data.length > 0) {
-          setSelectedGradeId(data[0].id);
+
+          setSelectedGradeId(
+            classGradeIdFromUrl ||
+            data[0].id
+          );
         }
 
       } catch (err) {
@@ -70,7 +86,7 @@ const Lessons = () => {
 
     fetchGrades();
 
-  }, []);
+  }, [classGradeIdFromUrl]);
 
   // =========================
   // Fetch Lessons
