@@ -1,27 +1,19 @@
-import api from '../api/axios';
-import AddAttendance from '../components/attendance/AttendanceForm';
+import axiosInstance from '../api/axiosInstance';
 
-
-//POST-> /attendance
+// POST /attendance
 export const addAttendance = async (attendanceData) => {
-    const response = await api.post('/attendance', attendanceData);
-    return response.data;
-}
+  const response = await axiosInstance.post('/attendance', attendanceData);
+  return response.data;
+};
 
-//get-> /attendance
-export const getAllAttendanceRecords = async () => {
-    const response = await api.get('/attendance');
-    return response.data;
-}
-
-//GET /attendance/lesson/{lessonId}
+// GET /attendance/lesson/{lessonId}
 export const getAttendanceByLessonId = async (lessonId) => {
-    const response = await api.get(`/attendance/lesson/${lessonId}`);
-    return response.data;
-}
+  const response = await axiosInstance.get(`/attendance/lesson/${lessonId}`);
+  return response.data;
+};
 
-//GET /class/{classGradeId}
+// GET /attendance/class/{classGradeId}
 export const getAttendanceByClassGradeId = async (classGradeId) => {
-    const response = await api.get(`/attendance/class/${classGradeId}`);
-    return response.data;
-}
+  const response = await axiosInstance.get(`/attendance/class/${classGradeId}`);
+  return response.data;
+};

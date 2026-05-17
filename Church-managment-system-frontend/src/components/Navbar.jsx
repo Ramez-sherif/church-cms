@@ -1,23 +1,121 @@
-import { Link } from "react-router-dom"
+import { Menu, LogOut, User } from 'lucide-react';
+import useAuthStore from '../store/useAuthStore';
+import { useNavigate } from 'react-router-dom';
 
-const Navbar = () => {
+const Navbar = ({ toggleSidebar }) => {
+
+    const {
+        user,
+        logout
+    } = useAuthStore();
+
+    const navigate = useNavigate();
+
+    // =========================
+    // Logout
+    // =========================
+    const handleLogout = async () => {
+
+        await logout();
+
+        navigate('/login');
+    };
+
     return (
-    <header className="navbar">
-        <div className="logo"> 
-            ✝
-        </div>
-        <nav>
-            <ul>
-                <li><Link to="/attendance">Attendance</Link></li>
-                <li><Link to="/add-attendance/1">Add Attendance</Link></li>
-                <li><Link to="/teachers">Teachers</Link></li>
-                <li><Link to="/students">Students</Link></li>
-                <li><Link to="/add-teacher">Add Teacher</Link></li>
-                <li><Link to="/add-student">Add Student</Link></li>
-                <li><Link to="/class-grades">Class Grades</Link></li>
-            </ul>
+
+        <nav className="navbar-shell">
+
+            <div className="navbar-right">
+
+                <button
+                    className="mobile-menu-btn"
+                    onClick={toggleSidebar}
+                    style={{
+                        display: 'none',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer'
+                    }}
+                >
+                    <Menu size={24} />
+                </button>
+
+            </div>
+
+            <div
+                className="navbar-left"
+                style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1.5rem'
+                }}
+            >
+
+                <div className="user-profile">
+
+                    <div
+                        className="user-info"
+                        style={{
+                            textAlign: 'left',
+                            marginRight: '0.5rem'
+                        }}
+                    >
+
+                        <div
+                            style={{
+                                fontWeight: '600',
+                                fontSize: '0.875rem'
+                            }}
+                        >
+                            {user?.username || 'مستخدم'}
+                        </div>
+
+                        <div
+                            style={{
+                                fontSize: '0.75rem',
+                                color: 'var(--text-muted)'
+                            }}
+                        >
+                            {user?.role || 'مسؤول'}
+                        </div>
+
+                    </div>
+
+                    <div className="user-avatar">
+                        <User size={20} />
+                    </div>
+
+                </div>
+
+                <button
+                    onClick={handleLogout}
+                    className="logout-btn"
+                >
+
+                    <LogOut size={18} />
+
+                    <span>
+                        تسجيل الخروج
+                    </span>
+
+                </button>
+
+            </div>
+
+            <style
+                dangerouslySetInnerHTML={{
+                    __html: `
+            @media (max-width: 768px) {
+              .mobile-menu-btn {
+                display: block !important;
+              }
+            }
+          `
+                }}
+            />
+
         </nav>
-    </header>
     );
-}
-    export default Navbar;
+};
+
+export default Navbar;
