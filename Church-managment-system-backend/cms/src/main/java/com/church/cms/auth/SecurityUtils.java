@@ -48,8 +48,14 @@ public class SecurityUtils {
         // =========================
         public Teacher getCurrentTeacher() {
 
-                return (Teacher) getCurrentAccount()
-                                .getUser();
+                if (!(getCurrentAccount()
+                                .getUser() instanceof Teacher teacher)) {
+
+                        throw new RuntimeException(
+                                        "Current user is not a teacher");
+                }
+
+                return teacher;
         }
 
         // =========================
@@ -57,8 +63,14 @@ public class SecurityUtils {
         // =========================
         public Father getCurrentFather() {
 
-                return (Father) getCurrentAccount()
-                                .getUser();
+                if (!(getCurrentAccount()
+                                .getUser() instanceof Father father)) {
+
+                        throw new RuntimeException(
+                                        "Current user is not a father");
+                }
+
+                return father;
         }
 
         // =========================
@@ -95,42 +107,63 @@ public class SecurityUtils {
         public boolean isGeneralAdmin() {
 
                 return isTeacher()
-                                && getCurrentServiceRole() == ServiceRole.GENERAL_ADMIN;
+
+                                &&
+
+                                getCurrentServiceRole() == ServiceRole.GENERAL_ADMIN;
         }
 
         public boolean isStageAdmin() {
 
                 return isTeacher()
-                                && getCurrentServiceRole() == ServiceRole.STAGE_ADMIN;
+
+                                &&
+
+                                getCurrentServiceRole() == ServiceRole.STAGE_ADMIN;
         }
 
         public boolean isStageLeader() {
 
                 return isTeacher()
-                                && getCurrentServiceRole() == ServiceRole.STAGE_LEADER;
+
+                                &&
+
+                                getCurrentServiceRole() == ServiceRole.STAGE_LEADER;
         }
 
         public boolean isAssistantStageLeader() {
 
                 return isTeacher()
-                                && getCurrentServiceRole() == ServiceRole.ASSISTANT_STAGE_LEADER;
+
+                                &&
+
+                                getCurrentServiceRole() == ServiceRole.ASSISTANT_STAGE_LEADER;
         }
 
         public boolean isStageGroupLeader() {
 
                 return isTeacher()
-                                && getCurrentServiceRole() == ServiceRole.STAGE_GROUP_LEADER;
+
+                                &&
+
+                                getCurrentServiceRole() == ServiceRole.STAGE_GROUP_LEADER;
         }
 
         public boolean isAssistantStageGroupLeader() {
 
                 return isTeacher()
-                                && getCurrentServiceRole() == ServiceRole.ASSISTANT_STAGE_GROUP_LEADER;
+
+                                &&
+
+                                getCurrentServiceRole() == ServiceRole.ASSISTANT_STAGE_GROUP_LEADER;
         }
 
         public boolean isClassServant() {
 
                 return isTeacher()
-                                && getCurrentServiceRole() == ServiceRole.CLASS_SERVANT;
+
+                                &&
+
+                                getCurrentServiceRole() == ServiceRole.CLASS_SERVANT;
         }
 }

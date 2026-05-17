@@ -49,10 +49,14 @@ public class TeacherService {
                 // =========================
                 // Get Class Grade
                 // =========================
-                ClassGrade grade = classGradeService
-                                .getClassGradeById(
-                                                dto.getClassGradeId());
+                ClassGrade grade = null;
 
+                if (dto.getClassGradeId() != null) {
+
+                        grade = classGradeService
+                                        .getClassGradeById(
+                                                        dto.getClassGradeId());
+                }
                 // =========================
                 // Create Teacher Entity
                 // =========================

@@ -128,8 +128,14 @@ public class AuthService {
         // =========================
         public CurrentUserResponseDTO me() {
 
+                // =========================
+                // Current Account
+                // =========================
                 Account account = securityUtils.getCurrentAccount();
 
+                // =========================
+                // Current User
+                // =========================
                 User user = account.getUser();
 
                 String fullName = null;
@@ -141,28 +147,42 @@ public class AuthService {
                 // =========================
                 if (user != null) {
 
-                        fullName = user.getFirstName()
-                                        + " "
-                                        + user.getLastName();
+                        String firstName = user.getFirstName() != null
+                                        ? user.getFirstName()
+                                        : "";
+
+                        String lastName = user.getLastName() != null
+                                        ? user.getLastName()
+                                        : "";
+
+                        fullName = (firstName + " " + lastName)
+                                        .trim();
                 }
 
                 // =========================
-                // Service Role
+                // Teacher Service Role
                 // =========================
-                if (user instanceof Teacher teacher
-                                && teacher.getServiceRole() != null) {
+                if (user instanceof Teacher teacher) {
 
-                        serviceRole = teacher.getServiceRole()
-                                        .name();
+                        if (teacher.getServiceRole() != null) {
+
+                                serviceRole = teacher.getServiceRole()
+                                                .name();
+                        }
                 }
 
                 // =========================
                 // Response
                 // =========================
                 return new CurrentUserResponseDTO(
+
                                 account.getUsername(),
-                                account.getRole().name(),
+
+                                account.getRole()
+                                                .name(),
+
                                 fullName,
+
                                 serviceRole);
         }
 }
