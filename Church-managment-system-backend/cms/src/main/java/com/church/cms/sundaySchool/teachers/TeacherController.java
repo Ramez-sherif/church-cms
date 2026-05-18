@@ -41,6 +41,16 @@ public class TeacherController {
         return ResponseEntity.ok(this.teacherService.getTeachersByClassGrade(classGradeId));
     }
 
+    // =========================
+    // Get All Teachers
+    // =========================
+    @GetMapping
+    public ResponseEntity<List<TeacherResponseDTO>> getAllTeachers() {
+
+        return ResponseEntity.ok(
+                teacherService.getAllTeachers());
+    }
+
 }
 /*
  * POST-> /teachers

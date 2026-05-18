@@ -136,4 +136,16 @@ public class TeacherService {
                                 .orElseThrow(() -> new NotFoundException(
                                                 "Teacher not found"));
         }
+
+        // =========================
+        // Get All Teachers
+        // =========================
+        public List<TeacherResponseDTO> getAllTeachers() {
+
+                return teacherRepository
+                                .findAll()
+                                .stream()
+                                .map(TeacherMapper::toDTO)
+                                .toList();
+        }
 }

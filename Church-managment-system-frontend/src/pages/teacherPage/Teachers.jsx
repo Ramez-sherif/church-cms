@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 
 import {
-  getTeachersByClassGrade
+  getAllTeachers
 } from '../../services/teacher.service';
 
 import {
@@ -88,9 +88,7 @@ const Teachers = () => {
     try {
 
       const data =
-        await getTeachersByClassGrade(
-          gradeId
-        );
+        await getAllTeachers();
 
       setTeachers(data);
 

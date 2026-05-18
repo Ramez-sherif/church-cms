@@ -11,3 +11,12 @@ export const addTeacher = async (teacherData) => {
   const response = await axiosInstance.post('/teachers', teacherData);
   return response.data;
 };
+
+// GET /teachers
+export const getAllTeachers = async () => {
+
+  const response =
+    await axiosInstance.get('/teachers');
+
+  return response.data;
+};

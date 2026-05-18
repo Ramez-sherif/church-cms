@@ -13,9 +13,7 @@ public class CmsApplication {
 }
 
 /*
-cd"d:\Microsoft Visual Studio Code\JavaSpring\church-cms\cms\"
-./mvnw spring-boot:run == ./mvnw.cmd spring-boot:run
-http://localhost:8080/
+ * cd"d:\Microsoft Visual Studio Code\JavaSpring\church-cms\cms\"
+ * ./mvnw spring-boot:run == ./mvnw.cmd spring-boot:run
+ * http://localhost:8080/
  */
-
-
