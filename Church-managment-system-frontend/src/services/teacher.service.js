@@ -1,22 +1,87 @@
 import axiosInstance from '../api/axiosInstance';
 
-// GET /teachers/class/{classGradeId}
-export const getTeachersByClassGrade = async (classGradeId) => {
-  const response = await axiosInstance.get(`/teachers/class/${classGradeId}`);
-  return response.data;
-};
+// =========================
+// GET Teachers By Class
+// =========================
+export const getTeachersByClassGrade =
+  async (classGradeId) => {
 
-// POST /teachers
-export const addTeacher = async (teacherData) => {
-  const response = await axiosInstance.post('/teachers', teacherData);
-  return response.data;
-};
+    const response =
+      await axiosInstance.get(
+        `/teachers/class/${classGradeId}`
+      );
 
-// GET /teachers
-export const getAllTeachers = async () => {
+    return response.data;
+  };
 
-  const response =
-    await axiosInstance.get('/teachers');
+// =========================
+// GET All Teachers
+// =========================
+export const getAllTeachers =
+  async () => {
 
-  return response.data;
-};
+    const response =
+      await axiosInstance.get(
+        '/teachers'
+      );
+
+    return response.data;
+  };
+
+// =========================
+// GET Teacher By ID
+// =========================
+export const getTeacherById =
+  async (id) => {
+
+    const response =
+      await axiosInstance.get(
+        `/teachers/${id}`
+      );
+
+    return response.data;
+  };
+
+// =========================
+// ADD Teacher
+// =========================
+export const addTeacher =
+  async (teacherData) => {
+
+    const response =
+      await axiosInstance.post(
+        '/teachers',
+        teacherData
+      );
+
+    return response.data;
+  };
+
+// =========================
+// UPDATE Teacher
+// =========================
+export const updateTeacher =
+  async (id, teacherData) => {
+
+    const response =
+      await axiosInstance.put(
+        `/teachers/${id}`,
+        teacherData
+      );
+
+    return response.data;
+  };
+
+// =========================
+// DELETE Teacher
+// =========================
+export const deleteTeacher =
+  async (id) => {
+
+    const response =
+      await axiosInstance.delete(
+        `/teachers/${id}`
+      );
+
+    return response.data;
+  };

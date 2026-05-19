@@ -1,31 +1,37 @@
 import { useEffect, useState } from 'react';
 
-import { useNavigate } from 'react-router-dom';
-
 import {
   UserPlus,
   Search,
-  Filter,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Pencil,
+  Trash2,
+  User,
+  Phone,
+  MapPin,
+  Calendar,
+  Briefcase,
+  Shield,
+  Filter,
+  Save,
+  X
 } from 'lucide-react';
 
-import {
-  getAllTeachers
-} from '../../services/teacher.service';
+import { useNavigate } from 'react-router-dom';
 
 import {
-  getAllClassGrades
-} from '../../services/classGrade.service';
+  getAllTeachers,
+  deleteTeacher,
+  updateTeacher
+} from '../../services/teacher.service';
+
+import { getAllClassGrades } from '../../services/classGrade.service';
 
 const Teachers = () => {
 
-  const [teachers, setTeachers] = useState([]);
-
-  const [grades, setGrades] = useState([]);
-
-  const [selectedGradeId, setSelectedGradeId] =
-    useState('');
+  const [teachers, setTeachers] =
+    useState([]);
 
   const [searchTerm, setSearchTerm] =
     useState('');
@@ -36,73 +42,297 @@ const Teachers = () => {
   const [error, setError] =
     useState('');
 
+  // =========================
+  // Edit Modal State
+  // =========================
+  const [showEditModal,
+    setShowEditModal] =
+    useState(false);
+
+  const [selectedTeacher,
+    setSelectedTeacher] =
+    useState(null);
+
+  // =========================
+  // Edit Form Data
+  // =========================
+  const [editFormData,
+    setEditFormData] =
+    useState({
+
+      firstName: '',
+
+      lastName: '',
+
+      birthDate: '',
+
+      phoneNumber: '',
+
+      address: '',
+
+      serviceRole:
+        'CLASS_SERVANT',
+
+      classGradeId: ''
+    });
+
+  const [classGrades, setClassGrades] = useState([]);
+  const [updateLoading, setUpdateLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [editError, setEditError] = useState('');
+
   const navigate = useNavigate();
 
   // =========================
-  // Fetch Grades
+  // Handle Edit Change
   // =========================
-  useEffect(() => {
-
-    const fetchGrades = async () => {
-
-      try {
-
-        const data =
-          await getAllClassGrades();
-
-        setGrades(data);
-
-        if (data.length > 0) {
-          setSelectedGradeId(data[0].id);
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => {
+      const updated = {
+        ...prev,
+        [name]: value
+      };
+      if (name === 'serviceRole') {
+        if (value === 'GENERAL_ADMIN') {
+          updated.classGradeId = '';
+        } else if (prev.serviceRole === 'GENERAL_ADMIN' && !prev.classGradeId && classGrades.length > 0) {
+          updated.classGradeId = classGrades[0].id;
         }
-
-      } catch (err) {
-
-        setError(
-          'فشل في تحميل المراحل الدراسية'
-        );
       }
-    };
+      return updated;
+    });
 
-    fetchGrades();
+    setValidationErrors(prev => ({
+      ...prev,
+      [name]: ''
+    }));
+  };
 
-  }, []);
+  // =========================
+  // Translate Role
+  // =========================
+  const translateRole = (role) => {
+
+    switch (role) {
+
+      case 'GENERAL_ADMIN':
+        return 'أمين الخدمة';
+
+      case 'STAGE_ADMIN':
+        return 'مسؤول مرحلة';
+
+      case 'STAGE_LEADER':
+        return 'أمين مرحلة';
+
+      case 'ASSISTANT_STAGE_LEADER':
+        return 'مساعد أمين مرحلة';
+
+      case 'STAGE_GROUP_LEADER':
+        return 'أمين مجموعة';
+
+      case 'ASSISTANT_STAGE_GROUP_LEADER':
+        return 'مساعد أمين مجموعة';
+
+      case 'CLASS_SERVANT':
+        return 'خادم';
+
+      default:
+        return role;
+    }
+  };
+
+  // =========================
+  // Role Badge Style
+  // =========================
+  const getRoleBadgeStyle = (role) => {
+
+    switch (role) {
+
+      case 'GENERAL_ADMIN':
+
+        return {
+          backgroundColor: '#dcfce7',
+          color: '#166534'
+        };
+
+      case 'STAGE_ADMIN':
+
+        return {
+          backgroundColor: '#ede9fe',
+          color: '#6d28d9'
+        };
+
+      case 'STAGE_LEADER':
+
+        return {
+          backgroundColor: '#dbeafe',
+          color: '#1d4ed8'
+        };
+
+      case 'STAGE_GROUP_LEADER':
+
+        return {
+          backgroundColor: '#ffedd5',
+          color: '#ea580c'
+        };
+
+      default:
+
+        return {
+          backgroundColor: '#eff6ff',
+          color: '#2563eb'
+        };
+    }
+  };
+
+  // =========================
+  // Fetch Class Grades
+  // =========================
+  const fetchClassGrades = async () => {
+    try {
+      const data = await getAllClassGrades();
+      setClassGrades(data);
+    } catch (err) {
+      console.error('فشل في تحميل المراحل الدراسية', err);
+    }
+  };
 
   // =========================
   // Fetch Teachers
   // =========================
   useEffect(() => {
 
-    if (selectedGradeId) {
-      fetchTeachers(selectedGradeId);
+    fetchTeachers();
+    fetchClassGrades();
+
+  }, []);
+
+  const fetchTeachers =
+    async () => {
+
+      setLoading(true);
+
+      setError('');
+
+      try {
+
+        const data =
+          await getAllTeachers();
+
+        setTeachers(data);
+
+      } catch (err) {
+
+        setError(
+          'فشل في تحميل قائمة الخدام'
+        );
+
+      } finally {
+
+        setLoading(false);
+      }
+    };
+
+  // =========================
+  // Delete Teacher
+  // =========================
+  const handleDelete =
+    async (id) => {
+
+      const confirmed =
+        window.confirm(
+          'هل أنت متأكد من حذف الخادم؟'
+        );
+
+      if (!confirmed) return;
+
+      try {
+
+        await deleteTeacher(id);
+
+        fetchTeachers();
+
+      } catch (err) {
+
+        alert(
+          'فشل في حذف الخادم'
+        );
+      }
+    };
+
+  // =========================
+  // Update Teacher
+  // =========================
+  const handleUpdateTeacher = async (e) => {
+    if (e) e.preventDefault();
+
+    // Frontend validation
+    const errors = {};
+    if (!editFormData.firstName.trim()) {
+      errors.firstName = 'الاسم الأول مطلوب';
+    } else if (editFormData.firstName.trim().length < 2) {
+      errors.firstName = 'الاسم الأول يجب أن يكون حرفين على الأقل';
     }
 
-  }, [selectedGradeId]);
+    if (!editFormData.lastName.trim()) {
+      errors.lastName = 'الاسم الأخير مطلوب';
+    } else if (editFormData.lastName.trim().length < 2) {
+      errors.lastName = 'الاسم الأخير يجب أن يكون حرفين على الأقل';
+    }
 
-  const fetchTeachers = async (gradeId) => {
+    if (!editFormData.birthDate) {
+      errors.birthDate = 'تاريخ الميلاد مطلوب';
+    }
 
-    setLoading(true);
+    const phoneRegex = /^01[0-2,5]{1}[0-9]{8}$/;
+    if (!editFormData.phoneNumber.trim()) {
+      errors.phoneNumber = 'رقم الهاتف مطلوب';
+    } else if (!phoneRegex.test(editFormData.phoneNumber.trim())) {
+      errors.phoneNumber = 'رقم هاتف مصري غير صحيح (مثال: 01xxxxxxxxx)';
+    }
 
-    setError('');
+    if (!editFormData.serviceRole) {
+      errors.serviceRole = 'المنصب الخدمي مطلوب';
+    }
+
+    if (editFormData.serviceRole !== 'GENERAL_ADMIN' && !editFormData.classGradeId) {
+      errors.classGradeId = 'المرحلة الدراسية مطلوبة';
+    }
+
+    setValidationErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      setEditError('يرجى تصحيح الأخطاء الموضحة أدناه قبل الحفظ.');
+      return;
+    }
+
+    setUpdateLoading(true);
+    setEditError('');
 
     try {
+      const payload = {
+        firstName: editFormData.firstName.trim(),
+        lastName: editFormData.lastName.trim(),
+        birthDate: editFormData.birthDate,
+        phoneNumber: editFormData.phoneNumber.trim(),
+        address: editFormData.address.trim(),
+        serviceRole: editFormData.serviceRole,
+        classGradeId: editFormData.serviceRole === 'GENERAL_ADMIN' ? null : (editFormData.classGradeId ? Number(editFormData.classGradeId) : null)
+      };
 
-      const data =
-        await getAllTeachers();
-
-      setTeachers(data);
-
+      await updateTeacher(selectedTeacher.id, payload);
+      setShowEditModal(false);
+      fetchTeachers();
     } catch (err) {
-
-      setError(
-        'فشل في تحميل قائمة المعلمين'
+      if (err.response?.data?.errors) {
+        setValidationErrors(err.response.data.errors);
+      }
+      setEditError(
+        err.response?.data?.message || 'فشل في تعديل بيانات الخادم'
       );
-
-      console.error(err);
-
     } finally {
-
-      setLoading(false);
+      setUpdateLoading(false);
     }
   };
 
@@ -132,9 +362,7 @@ const Teachers = () => {
       }}
     >
 
-      {/* =========================
-          Header
-      ========================= */}
+      {/* Header */}
 
       <div
         style={{
@@ -149,83 +377,81 @@ const Teachers = () => {
 
           <h1
             style={{
-              fontSize: '1.5rem',
-              fontWeight: '700',
-              color: '#1e293b'
+              fontSize: '2rem',
+              fontWeight: '800',
+              color: '#0f172a'
             }}
           >
-            قائمة المعلمين
+
+            قائمة الخدام
+
           </h1>
 
           <p
             style={{
-              color: '#64748b',
-              fontSize: '0.875rem'
+              color: '#64748b'
             }}
           >
-            إدارة بيانات المعلمين
+
+            إدارة بيانات الخدام والصلاحيات
+
           </p>
 
         </div>
 
-        <button
-          onClick={() =>
-            navigate('/dashboard/add-teacher')
-          }
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.75rem 1.25rem',
-            backgroundColor: '#2563eb',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.5rem',
-            cursor: 'pointer',
-            fontWeight: '600'
-          }}
-        >
-
-          <UserPlus size={18} />
-
-          إضافة معلم جديد
-
-        </button>
-
       </div>
 
-      {/* =========================
-          Filters
-      ========================= */}
+      {/* Add Button */}
+
+      <button
+        onClick={() =>
+          navigate('/dashboard/add-teacher')
+        }
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.9rem 1.6rem',
+          backgroundColor: '#2563eb',
+          color: 'white',
+          border: 'none',
+          borderRadius: '0.9rem',
+          cursor: 'pointer',
+          fontWeight: '700',
+          marginBottom: '1.5rem'
+        }}
+      >
+
+        <UserPlus size={18} />
+
+        إضافة خادم جديد
+
+      </button>
+
+      {/* Search */}
 
       <div
         style={{
           backgroundColor: 'white',
           padding: '1rem',
-          borderRadius: '0.75rem',
-          display: 'flex',
-          gap: '1rem',
-          marginBottom: '1.5rem',
-          boxShadow:
-            '0 1px 3px rgba(0,0,0,0.1)',
-          flexWrap: 'wrap'
+          borderRadius: '1rem',
+          marginBottom: '1.5rem'
         }}
       >
 
         <div
           style={{
-            flex: 1,
-            position: 'relative',
-            minWidth: '250px'
+            position: 'relative'
           }}
         >
 
           <Search
             style={{
               position: 'absolute',
-              right: '0.75rem',
+              right: '1rem',
               top: '50%',
-              transform: 'translateY(-50%)',
+              transform:
+                'translateY(-50%)',
               color: '#94a3b8'
             }}
             size={18}
@@ -236,237 +462,654 @@ const Teachers = () => {
             placeholder="بحث..."
             value={searchTerm}
             onChange={(e) =>
-              setSearchTerm(e.target.value)
-            }
-            style={{
-              width: '100%',
-              padding:
-                '0.625rem 2.5rem 0.625rem 0.75rem',
-              border: '1px solid #e2e8f0',
-              borderRadius: '0.5rem',
-              outline: 'none'
-            }}
-          />
-
-        </div>
-
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}
-        >
-
-          <Filter
-            size={18}
-            color="#64748b"
-          />
-
-          <select
-            value={selectedGradeId}
-            onChange={(e) =>
-              setSelectedGradeId(
+              setSearchTerm(
                 e.target.value
               )
             }
             style={{
-              padding: '0.625rem 1rem',
-              border: '1px solid #e2e8f0',
-              borderRadius: '0.5rem',
-              backgroundColor: 'white',
-              outline: 'none',
-              minWidth: '200px'
+              width: '100%',
+              padding:
+                '0.9rem 3rem 0.9rem 1rem',
+              border:
+                '1px solid #e2e8f0',
+              borderRadius: '0.75rem'
             }}
-          >
-
-            {grades.map((grade) => (
-
-              <option
-                key={grade.id}
-                value={grade.id}
-              >
-                {grade.name}
-              </option>
-
-            ))}
-
-          </select>
+          />
 
         </div>
 
       </div>
 
-      {/* =========================
-          Content
-      ========================= */}
+      {/* Table */}
 
-      {loading ? (
+      <table
+        style={{
+          width: '100%',
+          backgroundColor: 'white',
+          borderRadius: '1rem',
+          overflow: 'hidden'
+        }}
+      >
 
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            padding: '4rem'
-          }}
-        >
+        <thead>
 
-          <Loader2
-            className="animate-spin"
-            size={40}
-            color="#2563eb"
-          />
+          <tr>
 
-        </div>
+            <th>الاسم</th>
 
-      ) : error ? (
+            <th>الدور</th>
 
-        <div
-          style={{
-            backgroundColor: '#fef2f2',
-            color: '#ef4444',
-            padding: '1rem',
-            borderRadius: '0.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem'
-          }}
-        >
+            <th>الهاتف</th>
 
-          <AlertCircle size={20} />
+            <th>الإجراءات</th>
 
-          {error}
+          </tr>
 
-        </div>
+        </thead>
 
-      ) : filteredTeachers.length === 0 ? (
+        <tbody>
 
-        <div
-          style={{
-            textAlign: 'center',
-            padding: '4rem',
-            color: '#64748b',
-            backgroundColor: 'white',
-            borderRadius: '0.75rem'
-          }}
-        >
+          {filteredTeachers.map(
+            (teacher) => (
 
-          لا يوجد معلمين حالياً
+              <tr key={teacher.id}>
 
-        </div>
+                <td>
+                  {teacher.firstName}
+                  {' '}
+                  {teacher.lastName}
+                </td>
 
-      ) : (
+                <td>
 
-        <div
-          style={{
-            overflowX: 'auto'
-          }}
-        >
+                  <span
+                    style={{
+                      padding:
+                        '0.35rem 0.8rem',
+                      borderRadius:
+                        '999px',
+                      fontSize:
+                        '0.85rem',
+                      fontWeight:
+                        '600',
+                      ...getRoleBadgeStyle(
+                        teacher.serviceRole
+                      )
+                    }}
+                  >
 
-          <div
-            style={{
-              backgroundColor: 'white',
-              borderRadius: '0.75rem',
-              overflow: 'hidden',
-              boxShadow:
-                '0 1px 3px rgba(0,0,0,0.1)',
-              minWidth: '900px'
-            }}
-          >
+                    {translateRole(
+                      teacher.serviceRole
+                    )}
 
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                textAlign: 'right'
-              }}
-            >
+                  </span>
 
-              <thead
-                style={{
-                  backgroundColor: '#f8fafc',
-                  borderBottom:
-                    '1px solid #e2e8f0'
-                }}
-              >
+                </td>
 
-                <tr>
+                <td>
+                  {teacher.phoneNumber}
+                </td>
 
-                  <th style={{ padding: '1rem' }}>
-                    الاسم
-                  </th>
+                <td>
 
-                  <th style={{ padding: '1rem' }}>
-                    الدور
-                  </th>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '0.5rem'
+                    }}
+                  >
 
-                  <th style={{ padding: '1rem' }}>
-                    الهاتف
-                  </th>
+                    {/* Edit */}
 
-                  <th style={{ padding: '1rem' }}>
-                    الميلاد
-                  </th>
+                    <button
+                      onClick={() => {
 
-                  <th style={{ padding: '1rem' }}>
-                    العنوان
-                  </th>
+                        setSelectedTeacher(
+                          teacher
+                        );
 
-                </tr>
+                        setEditFormData({
 
-              </thead>
+                          firstName:
+                            teacher.firstName || '',
 
-              <tbody>
+                          lastName:
+                            teacher.lastName || '',
 
-                {filteredTeachers.map(
-                  (teacher, index) => (
+                          birthDate:
+                            teacher.birthDate || '',
 
-                    <tr
-                      key={teacher.id || index}
-                      style={{
-                        borderBottom:
-                          '1px solid #f1f5f9'
+                          phoneNumber:
+                            teacher.phoneNumber || '',
+
+                          address:
+                            teacher.address || '',
+
+                          serviceRole:
+                            teacher.serviceRole || '',
+
+                          classGradeId:
+                            (teacher.classGradeId !== null && teacher.classGradeId !== undefined) ? String(teacher.classGradeId) : ''
+                        });
+
+                        setValidationErrors({});
+                        setEditError('');
+
+                        setShowEditModal(
+                          true
+                        );
                       }}
                     >
 
-                      <td style={{ padding: '1rem' }}>
-                        {teacher.firstName}
-                        {' '}
-                        {teacher.lastName}
-                      </td>
+                      <Pencil size={16} />
 
-                      <td style={{ padding: '1rem' }}>
-                        {teacher.serviceRole}
-                      </td>
+                    </button>
 
-                      <td style={{ padding: '1rem' }}>
-                        {teacher.phoneNumber}
-                      </td>
+                    {/* Delete */}
 
-                      <td style={{ padding: '1rem' }}>
-                        {teacher.birthDate}
-                      </td>
+                    <button
+                      onClick={() =>
+                        handleDelete(
+                          teacher.id
+                        )
+                      }
+                    >
 
-                      <td style={{ padding: '1rem' }}>
-                        {teacher.address}
-                      </td>
+                      <Trash2 size={16} />
 
-                    </tr>
-                  )
+                    </button>
+
+                  </div>
+
+                </td>
+
+              </tr>
+            )
+          )}
+
+        </tbody>
+
+      </table>
+
+      {/* Edit Modal */}
+
+      {showEditModal && (
+
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.3)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 9999,
+            padding: '1.5rem',
+            boxSizing: 'border-box'
+          }}
+        >
+
+          <form
+            onSubmit={handleUpdateTeacher}
+            noValidate
+            style={{
+              backgroundColor: 'white',
+              width: '100%',
+              maxWidth: '900px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              borderRadius: '1.25rem',
+              padding: '2.5rem',
+              boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)',
+              border: '1px solid #e2e8f0',
+              boxSizing: 'border-box',
+              position: 'relative'
+            }}
+          >
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={() => setShowEditModal(false)}
+              style={{
+                position: 'absolute',
+                top: '1.5rem',
+                left: '1.5rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: '#64748b',
+                padding: '0.5rem',
+                borderRadius: '9999px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = '#f1f5f9';
+                e.currentTarget.style.color = '#ef4444';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = '#64748b';
+              }}
+            >
+              <X size={20} />
+            </button>
+
+            <h2
+              style={{
+                fontSize: '1.5rem',
+                fontWeight: '800',
+                color: '#0f172a',
+                marginTop: 0,
+                marginBottom: '2rem'
+              }}
+            >
+              تعديل بيانات الخادم
+            </h2>
+
+            {/* Error Alert */}
+            {editError && (
+              <div
+                style={{
+                  backgroundColor: '#fef2f2',
+                  border: '1px solid #fee2e2',
+                  color: '#ef4444',
+                  padding: '1rem',
+                  borderRadius: '0.75rem',
+                  marginBottom: '1.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem'
+                }}
+              >
+                <AlertCircle size={20} />
+                <span style={{ fontWeight: '600', fontSize: '0.9rem' }}>{editError}</span>
+              </div>
+            )}
+
+            {/* Section 1: Personal Info */}
+            <div className="form-section">
+              <h2 className="section-title">
+                <User size={18} color="#2563eb" />
+                البيانات الشخصية
+              </h2>
+
+              <div className="form-grid">
+                {/* First Name */}
+                <div>
+                  <label className="form-label">الاسم الأول</label>
+                  <div className="input-container">
+                    <input
+                      name="firstName"
+                      value={editFormData.firstName}
+                      onChange={handleEditChange}
+                      className="form-input"
+                      placeholder="مثال: يوحنا"
+                      style={{
+                        borderColor: validationErrors.firstName ? '#ef4444' : '#cbd5e1'
+                      }}
+                    />
+                    <User className="input-icon" size={18} />
+                  </div>
+                  {validationErrors.firstName && (
+                    <p className="field-error">{validationErrors.firstName}</p>
+                  )}
+                </div>
+
+                {/* Last Name */}
+                <div>
+                  <label className="form-label">الاسم الأخير</label>
+                  <div className="input-container">
+                    <input
+                      name="lastName"
+                      value={editFormData.lastName}
+                      onChange={handleEditChange}
+                      className="form-input"
+                      placeholder="مثال: نبيل"
+                      style={{
+                        borderColor: validationErrors.lastName ? '#ef4444' : '#cbd5e1'
+                      }}
+                    />
+                    <User className="input-icon" size={18} />
+                  </div>
+                  {validationErrors.lastName && (
+                    <p className="field-error">{validationErrors.lastName}</p>
+                  )}
+                </div>
+
+                {/* Phone Number */}
+                <div>
+                  <label className="form-label">رقم الهاتف</label>
+                  <div className="input-container">
+                    <input
+                      name="phoneNumber"
+                      value={editFormData.phoneNumber}
+                      onChange={handleEditChange}
+                      className="form-input"
+                      placeholder="01xxxxxxxxx"
+                      style={{
+                        borderColor: validationErrors.phoneNumber ? '#ef4444' : '#cbd5e1'
+                      }}
+                    />
+                    <Phone className="input-icon" size={18} />
+                  </div>
+                  {validationErrors.phoneNumber && (
+                    <p className="field-error">{validationErrors.phoneNumber}</p>
+                  )}
+                </div>
+
+                {/* Birth Date */}
+                <div>
+                  <label className="form-label">تاريخ الميلاد</label>
+                  <div className="input-container">
+                    <input
+                      type="date"
+                      name="birthDate"
+                      value={editFormData.birthDate}
+                      onChange={handleEditChange}
+                      className="form-input"
+                      style={{
+                        borderColor: validationErrors.birthDate ? '#ef4444' : '#cbd5e1'
+                      }}
+                    />
+                    <Calendar className="input-icon" size={18} />
+                  </div>
+                  {validationErrors.birthDate && (
+                    <p className="field-error">{validationErrors.birthDate}</p>
+                  )}
+                </div>
+
+                {/* Address */}
+                <div className="grid-full-width">
+                  <label className="form-label">العنوان</label>
+                  <div className="input-container">
+                    <input
+                      name="address"
+                      value={editFormData.address}
+                      onChange={handleEditChange}
+                      className="form-input"
+                      placeholder="العنوان بالتفصيل..."
+                      style={{
+                        borderColor: validationErrors.address ? '#ef4444' : '#cbd5e1'
+                      }}
+                    />
+                    <MapPin className="input-icon" size={18} />
+                  </div>
+                  {validationErrors.address && (
+                    <p className="field-error">{validationErrors.address}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Service Info */}
+            <div className="form-section" style={{ marginBottom: '1rem' }}>
+              <h2 className="section-title">
+                <Briefcase size={18} color="#2563eb" />
+                بيانات الخدمة
+              </h2>
+
+              <div className="form-grid">
+                {/* Service Role */}
+                <div>
+                  <label className="form-label">المنصب الخدمي</label>
+                  <div className="input-container">
+                    <select
+                      name="serviceRole"
+                      value={editFormData.serviceRole}
+                      onChange={handleEditChange}
+                      className="form-select"
+                      style={{
+                        borderColor: validationErrors.serviceRole ? '#ef4444' : '#cbd5e1'
+                      }}
+                    >
+                      <option value="CLASS_SERVANT">خادم</option>
+                      <option value="STAGE_GROUP_LEADER">أمين مجموعة</option>
+                      <option value="ASSISTANT_STAGE_GROUP_LEADER">مساعد أمين مجموعة</option>
+                      <option value="STAGE_LEADER">أمين مرحلة</option>
+                      <option value="ASSISTANT_STAGE_LEADER">مساعد أمين مرحلة</option>
+                      <option value="STAGE_ADMIN">مسؤول مرحلة</option>
+                      <option value="GENERAL_ADMIN">أمين الخدمة</option>
+                    </select>
+                    <Shield className="input-icon" size={18} />
+                  </div>
+                  {validationErrors.serviceRole && (
+                    <p className="field-error">{validationErrors.serviceRole}</p>
+                  )}
+                </div>
+
+                {/* Class Grade */}
+                <div>
+                  <label className="form-label">الفصل / المرحلة</label>
+                  <div className="input-container">
+                    <select
+                      name="classGradeId"
+                      value={editFormData.classGradeId}
+                      onChange={handleEditChange}
+                      className="form-select"
+                      disabled={editFormData.serviceRole === 'GENERAL_ADMIN'}
+                      style={{
+                        borderColor: validationErrors.classGradeId ? '#ef4444' : '#cbd5e1',
+                        backgroundColor: editFormData.serviceRole === 'GENERAL_ADMIN' ? '#f1f5f9' : '#ffffff',
+                        cursor: editFormData.serviceRole === 'GENERAL_ADMIN' ? 'not-allowed' : 'pointer'
+                      }}
+                    >
+                      {editFormData.serviceRole === 'GENERAL_ADMIN' ? (
+                        <option value="">لا يوجد مرحلة لأمين الخدمة</option>
+                      ) : (
+                        <>
+                          <option value="">اختر الفصل / المرحلة</option>
+                          {classGrades.map((grade) => (
+                            <option key={grade.id} value={grade.id}>
+                              {grade.name}
+                            </option>
+                          ))}
+                        </>
+                      )}
+                    </select>
+                    <Filter className="input-icon" size={18} />
+                  </div>
+                  {validationErrors.classGradeId && (
+                    <p className="field-error">{validationErrors.classGradeId}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Submit Button Row */}
+            <div
+              style={{
+                marginTop: '2.5rem',
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '1rem',
+                borderTop: '1px solid #f1f5f9',
+                paddingTop: '1.5rem'
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => setShowEditModal(false)}
+                style={{
+                  padding: '0.85rem 2rem',
+                  backgroundColor: '#f1f5f9',
+                  color: '#475569',
+                  border: 'none',
+                  borderRadius: '0.75rem',
+                  fontSize: '1rem',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e2e8f0')}
+                onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f9')}
+              >
+                إلغاء
+              </button>
+              <button
+                type="submit"
+                disabled={updateLoading}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.75rem',
+                  padding: '0.85rem 2rem',
+                  backgroundColor: '#2563eb',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '0.75rem',
+                  fontSize: '1rem',
+                  fontWeight: '700',
+                  cursor: updateLoading ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.2)'
+                }}
+                onMouseOver={(e) => {
+                  if (!updateLoading) e.currentTarget.style.backgroundColor = '#1d4ed8';
+                }}
+                onMouseOut={(e) => {
+                  if (!updateLoading) e.currentTarget.style.backgroundColor = '#2563eb';
+                }}
+              >
+                {updateLoading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    جاري الحفظ...
+                  </>
+                ) : (
+                  <>
+                    <Save size={20} />
+                    حفظ التعديلات
+                  </>
                 )}
-
-              </tbody>
-
-            </table>
-
-          </div>
+              </button>
+            </div>
+          </form>
 
         </div>
       )}
 
+      {/* Global CSS Inject */}
       <style
         dangerouslySetInnerHTML={{
           __html: `
+            .form-section {
+              background-color: #f8fafc;
+              border: 1px solid #f1f5f9;
+              border-radius: 1rem;
+              padding: 1.75rem;
+              margin-bottom: 2rem;
+            }
+
+            .section-title {
+              font-size: 1.1rem;
+              font-weight: 800;
+              color: #1e293b;
+              margin-top: 0;
+              margin-bottom: 1.5rem;
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+              border-bottom: 2px solid #e2e8f0;
+              padding-bottom: 0.5rem;
+            }
+
+            .form-grid {
+              display: grid;
+              grid-template-columns: repeat(2, 1fr);
+              gap: 1.5rem;
+            }
+
+            @media (max-width: 768px) {
+              .form-grid {
+                grid-template-columns: 1fr;
+              }
+              .form-section {
+                padding: 1.25rem !important;
+              }
+            }
+
+            .grid-full-width {
+              grid-column: 1 / -1;
+            }
+
+            .form-label {
+              display: block;
+              margin-bottom: 0.5rem;
+              font-size: 0.9rem;
+              font-weight: 700;
+              color: #475569;
+            }
+
+            .input-container {
+              position: relative;
+            }
+
+            .form-input, .form-select {
+              width: 100%;
+              padding: 0.85rem 2.75rem 0.85rem 0.85rem;
+              border: 1px solid #cbd5e1;
+              border-radius: 0.75rem;
+              outline: none;
+              font-size: 0.95rem;
+              font-family: 'Cairo', sans-serif;
+              background-color: #ffffff;
+              color: #111827;
+              box-sizing: border-box;
+              transition: all 0.2s ease-in-out;
+            }
+
+            .form-select {
+              appearance: none;
+              cursor: pointer;
+              background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+              background-repeat: no-repeat;
+              background-position: left 0.85rem center;
+              background-size: 1.2rem;
+            }
+
+            .form-input:focus, .form-select:focus {
+              border-color: #2563eb;
+              box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+              background-color: #ffffff;
+            }
+
+            .form-input::placeholder {
+              color: #64748b;
+              opacity: 1;
+            }
+
+            .input-icon {
+              position: absolute;
+              right: 0.85rem;
+              top: 50%;
+              transform: translateY(-50%);
+              color: #94a3b8;
+              pointer-events: none;
+              transition: color 0.2s;
+            }
+
+            .form-input:focus + .input-icon, .form-select:focus + .input-icon {
+              color: #2563eb;
+            }
+
+            .field-error {
+              color: #ef4444;
+              font-size: 0.8rem;
+              margin-top: 0.35rem;
+              margin-bottom: 0;
+              font-weight: 600;
+              text-align: right;
+            }
+
+            input[type="date"] {
+              color: #111827;
+            }
+
             .animate-spin {
               animation: spin 1s linear infinite;
             }
@@ -475,7 +1118,6 @@ const Teachers = () => {
               from {
                 transform: rotate(0deg);
               }
-
               to {
                 transform: rotate(360deg);
               }

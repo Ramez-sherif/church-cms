@@ -26,7 +26,7 @@ const AddTeacher = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
-  
+
   // Validation Errors state
   const [validationErrors, setValidationErrors] = useState({});
 
@@ -75,7 +75,7 @@ const AddTeacher = () => {
       ...prev,
       [name]: value
     }));
-    
+
     // Clear validation error on change
     setValidationErrors(prev => ({
       ...prev,
@@ -87,59 +87,121 @@ const AddTeacher = () => {
   // Frontend Validator
   // =========================
   const validateForm = () => {
+
     const errors = {};
-    
+
     if (!formData.firstName.trim()) {
-      errors.firstName = 'الاسم الأول مطلوب';
-    } else if (formData.firstName.trim().length < 2) {
-      errors.firstName = 'الاسم الأول يجب أن يكون حرفين على الأقل';
+
+      errors.firstName =
+        'الاسم الأول مطلوب';
+
+    } else if (
+      formData.firstName
+        .trim()
+        .length < 2
+    ) {
+
+      errors.firstName =
+        'الاسم الأول يجب أن يكون حرفين على الأقل';
     }
 
     if (!formData.lastName.trim()) {
-      errors.lastName = 'الاسم الأخير مطلوب';
-    } else if (formData.lastName.trim().length < 2) {
-      errors.lastName = 'الاسم الأخير يجب أن يكون حرفين على الأقل';
+
+      errors.lastName =
+        'الاسم الأخير مطلوب';
+
+    } else if (
+      formData.lastName
+        .trim()
+        .length < 2
+    ) {
+
+      errors.lastName =
+        'الاسم الأخير يجب أن يكون حرفين على الأقل';
     }
 
     if (!formData.birthDate) {
-      errors.birthDate = 'تاريخ الميلاد مطلوب';
+
+      errors.birthDate =
+        'تاريخ الميلاد مطلوب';
     }
 
-    const phoneRegex = /^01[0-2,5]{1}[0-9]{8}$/;
+    const phoneRegex =
+      /^01[0-2,5]{1}[0-9]{8}$/;
+
     if (!formData.phoneNumber.trim()) {
-      errors.phoneNumber = 'رقم الهاتف مطلوب';
-    } else if (!phoneRegex.test(formData.phoneNumber.trim())) {
-      errors.phoneNumber = 'رقم هاتف مصري غير صحيح (مثال: 01xxxxxxxxx)';
+
+      errors.phoneNumber =
+        'رقم الهاتف مطلوب';
+
+    } else if (
+      !phoneRegex.test(
+        formData.phoneNumber.trim()
+      )
+    ) {
+
+      errors.phoneNumber =
+        'رقم هاتف مصري غير صحيح (مثال: 01xxxxxxxxx)';
     }
 
     if (!formData.serviceRole) {
-      errors.serviceRole = 'المنصب الخدمي مطلوب';
+
+      errors.serviceRole =
+        'المنصب الخدمي مطلوب';
     }
 
-    if (!formData.classGradeId) {
-      errors.classGradeId = 'المرحلة الدراسية مطلوبة';
+    // =========================
+    // GENERAL_ADMIN
+    // does not need class
+    // =========================
+    if (
+
+      formData.serviceRole !==
+      'GENERAL_ADMIN'
+
+      &&
+
+      !formData.classGradeId
+
+    ) {
+
+      errors.classGradeId =
+        'المرحلة الدراسية مطلوبة';
     }
 
     if (!formData.username.trim()) {
-      errors.username = 'اسم المستخدم مطلوب';
+
+      errors.username =
+        'اسم المستخدم مطلوب';
     }
 
     if (!formData.password) {
-      errors.password = 'كلمة المرور مطلوبة';
-    } else if (formData.password.length < 6) {
-      errors.password = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+
+      errors.password =
+        'كلمة المرور مطلوبة';
+
+    } else if (
+      formData.password
+        .length < 6
+    ) {
+
+      errors.password =
+        'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
     }
 
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
 
+    return (
+      Object.keys(errors)
+        .length === 0
+    );
+  };
   // =========================
   // Submit
   // =========================
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Run frontend validation
     if (!validateForm()) {
       setError('يرجى تصحيح الأخطاء الموضحة أدناه قبل الحفظ.');
@@ -161,7 +223,7 @@ const AddTeacher = () => {
       if (err.response?.data?.errors) {
         setValidationErrors(err.response.data.errors);
       }
-      
+
       setError(
         err.response?.data?.message || 'حدث خطأ أثناء إضافة الخادم'
       );
