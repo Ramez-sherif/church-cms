@@ -11,13 +11,25 @@ import lombok.Setter;
 @Getter
 @Setter
 public class TeacherResponseDTO {
+
     private UUID id;
+
     private String firstName;
+
     private String lastName;
-    private LocalDate birthDate; // YYYY-MM-DD
+
+    private LocalDate birthDate;
+
     private String phoneNumber;
+
     private String address;
 
     private ServiceRole serviceRole;
+
+    // =========================
+    // Class Grade
+    // =========================
+    private Long classGradeId;
+
     private String classGradeName;
 }

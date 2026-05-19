@@ -6,9 +6,11 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -49,6 +51,35 @@ public class TeacherController {
 
         return ResponseEntity.ok(
                 teacherService.getAllTeachers());
+    }
+
+    // =========================
+    // Update Teacher
+    // =========================
+    @PutMapping("/{id}")
+    public ResponseEntity<TeacherResponseDTO> updateTeacher(
+
+            @PathVariable UUID id,
+
+            @Valid @RequestBody TeacherUpdateRequestDTO dto) {
+
+        return ResponseEntity.ok(
+                teacherService.updateTeacher(
+                        id,
+                        dto));
+    }
+
+    // =========================
+    // Delete Teacher
+    // =========================
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteTeacher(
+            @PathVariable UUID id) {
+
+        teacherService.deleteTeacher(id);
+
+        return ResponseEntity.noContent()
+                .build();
     }
 
 }

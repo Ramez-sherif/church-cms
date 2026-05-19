@@ -5,7 +5,7 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-
 public interface TeacherRepository extends JpaRepository<Teacher, UUID> {
     List<Teacher> findByClassGrade_Id(Long classGradeID);
+
 }

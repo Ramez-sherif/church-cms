@@ -8,13 +8,18 @@ import org.springframework.stereotype.Service;
 
 import com.church.cms.auth.Account;
 import com.church.cms.auth.AccountRepository;
+
 import com.church.cms.shared.exceptions.ConflictException;
 import com.church.cms.shared.exceptions.NotFoundException;
+
+import com.church.cms.sundaySchool.common.ServiceRole;
 import com.church.cms.sundaySchool.common.UserRole;
+
 import com.church.cms.sundaySchool.grades.ClassGrade;
 import com.church.cms.sundaySchool.grades.ClassGradeService;
 
 import jakarta.transaction.Transactional;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -57,12 +62,23 @@ public class TeacherService {
                                         .getClassGradeById(
                                                         dto.getClassGradeId());
                 }
+
                 // =========================
                 // Create Teacher Entity
                 // =========================
                 Teacher teacher = TeacherMapper.toEntity(
                                 dto,
                                 grade);
+
+                // =========================
+                // GENERAL ADMIN
+                // No class grade
+                // =========================
+                if (dto.getServiceRole() == ServiceRole.GENERAL_ADMIN) {
+
+                        teacher.setClassGrade(
+                                        null);
+                }
 
                 // =========================
                 // Save Teacher
@@ -90,9 +106,11 @@ public class TeacherService {
 
                 account.setEnabled(true);
 
-                account.setUser(savedTeacher);
+                account.setUser(
+                                savedTeacher);
 
-                accountRepository.save(account);
+                accountRepository.save(
+                                account);
 
                 return TeacherMapper.toDTO(
                                 savedTeacher);
@@ -147,5 +165,90 @@ public class TeacherService {
                                 .stream()
                                 .map(TeacherMapper::toDTO)
                                 .toList();
+        }
+
+        // =========================
+        // Update Teacher
+        // =========================
+        public TeacherResponseDTO updateTeacher(
+                        UUID id,
+                        TeacherUpdateRequestDTO dto) {
+
+                Teacher teacher = getTeacherById(id);
+
+                // =========================
+                // Get Class Grade
+                // =========================
+                ClassGrade grade = null;
+
+                if (dto.getClassGradeId() != null) {
+
+                        grade = classGradeService
+                                        .getClassGradeById(
+                                                        dto.getClassGradeId());
+                }
+
+                // =========================
+                // Update Teacher
+                // =========================
+                teacher.setFirstName(
+                                dto.getFirstName());
+
+                teacher.setLastName(
+                                dto.getLastName());
+
+                teacher.setBirthDate(
+                                dto.getBirthDate());
+
+                teacher.setPhoneNumber(
+                                dto.getPhoneNumber());
+
+                teacher.setAddress(
+                                dto.getAddress());
+
+                teacher.setServiceRole(
+                                dto.getServiceRole());
+
+                // =========================
+                // GENERAL ADMIN
+                // No class grade
+                // =========================
+                if (dto.getServiceRole() == ServiceRole.GENERAL_ADMIN) {
+
+                        teacher.setClassGrade(
+                                        null);
+
+                } else {
+
+                        teacher.setClassGrade(
+                                        grade);
+                }
+
+                Teacher updatedTeacher = teacherRepository.save(
+                                teacher);
+
+                return TeacherMapper.toDTO(
+                                updatedTeacher);
+        }
+
+        // =========================
+        // Delete Teacher
+        // =========================
+        public void deleteTeacher(
+                        UUID id) {
+
+                Teacher teacher = getTeacherById(id);
+
+                // =========================
+                // Delete Account First
+                // =========================
+                accountRepository
+                                .deleteByUser_Id(id);
+
+                // =========================
+                // Delete Teacher
+                // =========================
+                teacherRepository.delete(
+                                teacher);
         }
 }
