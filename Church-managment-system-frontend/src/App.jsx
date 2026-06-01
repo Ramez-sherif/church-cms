@@ -28,6 +28,7 @@ import Home from './pages/Home.jsx';
 
 import ClassGrades from './pages/classGradePage/ClassGrades.jsx';
 import AddClassGrade from './pages/classGradePage/AddClassGrade.jsx';
+import ClassDashboard from './pages/classGradePage/ClassDashboard.jsx';
 
 import LandingPage from './pages/LandingPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -236,6 +237,11 @@ function App() {
                 />
               }
             >
+
+              <Route
+                path="class-grades/:classGradeId"
+                element={<ClassDashboard />}
+              />
 
               <Route
                 path="students"

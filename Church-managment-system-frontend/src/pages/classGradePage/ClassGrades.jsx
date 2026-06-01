@@ -291,218 +291,163 @@ const ClassGrades = () => {
           </button>
         </div>
       ) : (
-        /* Cards Grid */
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-            gap: '1.5rem',
-            paddingBottom: '3rem'
-          }}
-        >
-          {filteredGrades.map((grade) => (
-            <div
-              key={grade.id}
-              style={{
-                backgroundColor: 'white',
-                borderRadius: '1rem',
-                border: '1px solid #e2e8f0',
-                padding: '1.5rem',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
-                display: 'flex',
-                flexDirection: 'column',
-                justifyContent: 'space-between',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                cursor: 'default'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.05)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.02)';
-              }}
-            >
-              {/* Card Header & Metadata */}
-              <div>
+        /* Hierarchical Stages list */
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem', paddingBottom: '3rem' }}>
+          {(() => {
+            const stagesMap = {};
+            filteredGrades.forEach((grade) => {
+              const stageId = grade.stageId || 0;
+              const stageName = grade.stageName || 'عام';
+              const stageGroupId = grade.stageGroupId || 0;
+              const stageGroupName = grade.stageGroupName || '---';
+
+              if (!stagesMap[stageId]) {
+                stagesMap[stageId] = {
+                  id: stageId,
+                  name: stageName,
+                  stageGroups: {}
+                };
+              }
+
+              if (!stagesMap[stageId].stageGroups[stageGroupId]) {
+                stagesMap[stageId].stageGroups[stageGroupId] = {
+                  id: stageGroupId,
+                  name: stageGroupName,
+                  classGrades: []
+                };
+              }
+
+              stagesMap[stageId].stageGroups[stageGroupId].classGrades.push(grade);
+            });
+
+            const sortedStages = Object.values(stagesMap).sort((a, b) => a.id - b.id);
+
+            return sortedStages.map((stage) => (
+              <div key={stage.id} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {/* Stage Header Section */}
                 <div
                   style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '1rem'
+                    borderBottom: '2px solid #e2e8f0',
+                    paddingBottom: '0.5rem',
+                    marginBottom: '0.5rem'
                   }}
                 >
-                  <span
+                  <h2
                     style={{
-                      padding: '0.25rem 0.75rem',
-                      backgroundColor: '#eff6ff',
-                      color: '#2563eb',
-                      borderRadius: '2rem',
-                      fontSize: '0.75rem',
-                      fontWeight: '700',
+                      fontSize: '1.35rem',
+                      fontWeight: '800',
+                      color: '#0f172a',
+                      margin: 0,
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.25rem'
+                      gap: '0.5rem'
                     }}
                   >
-                    <Layers size={12} />
-                    {grade.stageName || 'عام'}
-                  </span>
-
-                  <span
-                    style={{
-                      fontSize: '0.75rem',
-                      color: '#94a3b8',
-                      fontWeight: '600'
-                    }}
-                  >
-                    ID: #{grade.id}
-                  </span>
+                    <span
+                      style={{
+                        width: '6px',
+                        height: '22px',
+                        backgroundColor: '#2563eb',
+                        borderRadius: '4px',
+                        display: 'inline-block'
+                      }}
+                    />
+                    {stage.name}
+                  </h2>
                 </div>
 
-                <h3
-                  style={{
-                    fontSize: '1.25rem',
-                    fontWeight: '800',
-                    color: '#1e293b',
-                    margin: '0 0 0.75rem 0',
-                    lineHeight: '1.4'
-                  }}
-                >
-                  {grade.name}
-                </h3>
-
+                {/* Stage Groups Cards Grid */}
                 <div
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    color: '#475569',
-                    fontSize: '0.85rem',
-                    backgroundColor: '#f8fafc',
-                    padding: '0.5rem 0.75rem',
-                    borderRadius: '0.5rem',
-                    marginBottom: '1.5rem'
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+                    gap: '1.5rem'
                   }}
                 >
-                  <span style={{ color: '#64748b', fontWeight: '600' }}>المجموعة الدراسية:</span>
-                  <span style={{ fontWeight: '700', color: '#0f172a' }}>{grade.stageGroupName || '---'}</span>
+                  {Object.values(stage.stageGroups).map((group) => (
+                    <div
+                      key={group.id}
+                      style={{
+                        backgroundColor: 'white',
+                        borderRadius: '1rem',
+                        border: '1px solid #e2e8f0',
+                        padding: '1.5rem',
+                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        transition: 'transform 0.2s, box-shadow 0.2s',
+                        cursor: 'default'
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.05)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.transform = 'translateY(0)';
+                        e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.02)';
+                      }}
+                    >
+                      <div>
+                        {/* Card Title: Stage Group Name */}
+                        <h3
+                          style={{
+                            fontSize: '1.15rem',
+                            fontWeight: '800',
+                            color: '#1e293b',
+                            margin: '0 0 1.25rem 0',
+                            lineHeight: '1.4'
+                          }}
+                        >
+                          {group.name}
+                        </h3>
+
+                        {/* Class Grade Chips */}
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexWrap: 'wrap',
+                            gap: '0.625rem'
+                          }}
+                        >
+                          {group.classGrades.map((grade) => (
+                            <button
+                              key={grade.id}
+                              onClick={() => navigate(`/dashboard/class-grades/${grade.id}`)}
+                              style={{
+                                padding: '0.6rem 1.1rem',
+                                backgroundColor: '#f8fafc',
+                                color: '#334155',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '0.75rem',
+                                cursor: 'pointer',
+                                fontWeight: '700',
+                                fontSize: '0.875rem',
+                                transition: 'all 0.2s',
+                                fontFamily: 'Cairo, sans-serif'
+                              }}
+                              onMouseOver={(e) => {
+                                e.currentTarget.style.backgroundColor = '#2563eb';
+                                e.currentTarget.style.color = '#ffffff';
+                                e.currentTarget.style.borderColor = '#2563eb';
+                              }}
+                              onMouseOut={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f8fafc';
+                                e.currentTarget.style.color = '#334155';
+                                e.currentTarget.style.borderColor = '#e2e8f0';
+                              }}
+                            >
+                              {grade.name}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              {/* Action Buttons / Navigation Badges */}
-              <div
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '0.75rem',
-                  borderTop: '1px solid #f1f5f9',
-                  paddingTop: '1rem',
-                  marginTop: '0.5rem'
-                }}
-              >
-                {/* 1. Navigate to Students */}
-                <button
-                  onClick={() => navigate(`/dashboard/class-grades/${grade.id}/students`)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                    padding: '0.625rem 1rem',
-                    backgroundColor: '#f0f9ff',
-                    color: '#0369a1',
-                    border: 'none',
-                    borderRadius: '0.5rem',
-                    cursor: 'pointer',
-                    fontWeight: '700',
-                    fontSize: '0.85rem',
-                    transition: 'all 0.15s'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = '#e0f2fe';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f0f9ff';
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <Users size={16} />
-                    <span>عرض الطلاب</span>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>◀</span>
-                </button>
-
-                {/* 2. Navigate to Lessons */}
-                <button
-                  onClick={() =>
-                    navigate(`/dashboard/lessons?classGradeId=${grade.id}`)
-                  }
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                    padding: '0.625rem 1rem',
-                    backgroundColor: '#ecfdf5',
-                    color: '#047857',
-                    border: 'none',
-                    borderRadius: '0.5rem',
-                    cursor: 'pointer',
-                    fontWeight: '700',
-                    fontSize: '0.85rem',
-                    transition: 'all 0.15s'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = '#d1fae5';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = '#ecfdf5';
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <BookOpen size={16} />
-                    <span>عرض المنهج والدروس</span>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>◀</span>
-                </button>
-
-                {/* 3. Navigate to Record Attendance */}
-                <button
-                  onClick={() => navigate(`/dashboard/add-attendance/${grade.id}`)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                    padding: '0.625rem 1rem',
-                    backgroundColor: '#fffbeb',
-                    color: '#b45309',
-                    border: 'none',
-                    borderRadius: '0.5rem',
-                    cursor: 'pointer',
-                    fontWeight: '700',
-                    fontSize: '0.85rem',
-                    transition: 'all 0.15s'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.backgroundColor = '#fef3c7';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.backgroundColor = '#fffbeb';
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <UserCheck size={16} />
-                    <span>تسجيل حضور الطلاب</span>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', opacity: 0.8 }}>◀</span>
-                </button>
-              </div>
-            </div>
-          ))}
+            ));
+          })()}
         </div>
       )}
 
