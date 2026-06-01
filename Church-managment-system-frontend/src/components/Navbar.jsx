@@ -123,6 +123,49 @@ const Navbar = ({
             >
 
                 {/* =========================
+            Church Branding
+        ========================= */}
+                <div
+                    className="navbar-brand"
+                    onClick={() => navigate('/')}
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        cursor: 'pointer',
+                        transition: 'opacity 0.2s ease'
+                    }}
+                    onMouseOver={(e) => (e.currentTarget.style.opacity = '0.85')}
+                    onMouseOut={(e) => (e.currentTarget.style.opacity = '1')}
+                >
+                    <img
+                        src="/churchlogoHome.png"
+                        alt="Church Logo"
+                        className="navbar-church-logo"
+                        style={{
+                            width: '52px',
+                            height: '52px',
+                            objectFit: 'contain',
+                            borderRadius: '50%',
+                            background: 'rgba(255,255,255,0.1)',
+                            padding: '4px',
+                            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+                        }}
+                    />
+                    <span
+                        className="navbar-church-name"
+                        style={{
+                            fontSize: '1.1rem',
+                            fontWeight: '700',
+                            color: '#1e293b',
+                            whiteSpace: 'nowrap'
+                        }}
+                    >
+                        كنيسة السيدة العذراء - العباسية الشرقية
+                    </span>
+                </div>
+
+                {/* =========================
             User Profile
         ========================= */}
                 <div className="user-profile">
@@ -203,6 +246,15 @@ const Navbar = ({
               .mobile-menu-btn {
 
                 display: block !important;
+              }
+
+              .navbar-church-logo {
+                width: 42px !important;
+                height: 42px !important;
+              }
+
+              .navbar-church-name {
+                display: none !important;
               }
             }
           `

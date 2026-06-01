@@ -4,8 +4,7 @@ import {
   Lock,
   User,
   Loader2,
-  ArrowRight,
-  Church
+  ArrowRight
 } from 'lucide-react';
 
 import useAuthStore from '../store/useAuthStore';
@@ -200,36 +199,50 @@ const LoginPage = () => {
         <div
           style={{
             textAlign: 'center',
-            marginBottom: '2rem'
+            marginBottom: '1.5rem'
           }}
         >
-            <div style={{
-              width: '90px',
-              height: '90px',
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+            {/* Church Logo */}
+            <div className="login-logo-container" style={{
+              width: '128px',
+              height: '128px',
+              borderRadius: '9999px',
+              background: '#ffffff',
+              padding: '8px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              margin: '0 auto 1rem',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+              margin: '0 auto 16px',
+              boxShadow: '0 8px 32px rgba(15,23,42,0.12), 0 2px 8px rgba(15,23,42,0.08)'
             }}>
-              <Church size={48} color="white" />
+              <img
+                src="/churchLogo.png"
+                alt="Church Logo"
+                className="login-church-logo"
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  borderRadius: '9999px'
+                }}
+              />
             </div>
             <h1
+              className="login-header-title"
               style={{
-                fontSize: '42px',
-                fontWeight: '800',
+                fontSize: '48px',
+                fontWeight: '700',
                 color: '#1e293b',
-                textAlign: 'center'
+                textAlign: 'center',
+                margin: '0 0 8px'
               }}
             >
               تسجيل الدخول
             </h1>
             <p
               style={{
-                color: '#64748b',
-                marginTop: '0.5rem',
+                color: '#94a3b8',
+                margin: '0 0 12px',
                 textAlign: 'center',
                 fontSize: '1rem'
               }}
@@ -241,10 +254,23 @@ const LoginPage = () => {
               width: '40px',
               height: '3px',
               backgroundColor: '#2563eb',
-              margin: '0.75rem auto 1.5rem',
+              margin: '0 auto',
               borderRadius: '2px'
             }} />
         </div>
+
+        {/* Responsive logo sizing */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media (max-width: 768px) {
+            .login-logo-container {
+              width: 110px !important;
+              height: 110px !important;
+            }
+            .login-header-title {
+              font-size: 36px !important;
+            }
+          }
+        `}} />
 
         {/* Error */}
         {error && (
