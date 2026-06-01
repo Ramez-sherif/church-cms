@@ -27,7 +27,7 @@ import {
 } from '../../services/teacher.service';
 
 import { getAllClassGrades } from '../../services/classGrade.service';
-import { getAllStages } from '../../services/stage.service';
+import { getAllStages, getAllStageGroups } from '../../services/stage.service';
 
 const Teachers = () => {
 
@@ -75,11 +75,13 @@ const Teachers = () => {
         'CLASS_SERVANT',
 
       classGradeId: '',
+      stageGroupId: '',
       stageId: ''
     });
 
   const [classGrades, setClassGrades] = useState([]);
   const [stages, setStages] = useState([]);
+  const [stageGroups, setStageGroups] = useState([]);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [validationErrors, setValidationErrors] = useState({});
   const [editError, setEditError] = useState('');
@@ -98,6 +100,7 @@ const Teachers = () => {
       };
       if (name === 'serviceRole') {
         updated.classGradeId = '';
+        updated.stageGroupId = '';
         updated.stageId = '';
       }
       return updated;
@@ -110,6 +113,7 @@ const Teachers = () => {
       };
       if (name === 'serviceRole') {
         updatedErrors.classGradeId = '';
+        updatedErrors.stageGroupId = '';
         updatedErrors.stageId = '';
       }
       return updatedErrors;
@@ -126,9 +130,6 @@ const Teachers = () => {
       case 'GENERAL_ADMIN':
         return 'أمين الخدمة';
 
-      case 'STAGE_ADMIN':
-        return 'مسؤول مرحلة';
-
       case 'STAGE_LEADER':
         return 'أمين مرحلة';
 
@@ -140,6 +141,12 @@ const Teachers = () => {
 
       case 'ASSISTANT_STAGE_GROUP_LEADER':
         return 'مساعد أمين مجموعة';
+
+      case 'CLASS_TEACHER':
+        return 'مسؤول الفصل';
+
+      case 'ASSISTANT_CLASS_TEACHER':
+        return 'مساعد مسؤول الفصل';
 
       case 'CLASS_SERVANT':
         return 'خادم';
@@ -163,14 +170,8 @@ const Teachers = () => {
           color: '#166534'
         };
 
-      case 'STAGE_ADMIN':
-
-        return {
-          backgroundColor: '#ede9fe',
-          color: '#6d28d9'
-        };
-
       case 'STAGE_LEADER':
+      case 'ASSISTANT_STAGE_LEADER':
 
         return {
           backgroundColor: '#dbeafe',
@@ -178,6 +179,7 @@ const Teachers = () => {
         };
 
       case 'STAGE_GROUP_LEADER':
+      case 'ASSISTANT_STAGE_GROUP_LEADER':
 
         return {
           backgroundColor: '#ffedd5',
@@ -196,17 +198,16 @@ const Teachers = () => {
   // =========================
   // Fetch Assignment Data (Grades, Stage Groups, Stages)
   // =========================
-  // =========================
-  // Fetch Assignment Data (Grades, Stages)
-  // =========================
   const fetchAssignmentData = async () => {
     try {
-      const [gradesData, stagesData] = await Promise.all([
+      const [gradesData, stagesData, stageGroupsData] = await Promise.all([
         getAllClassGrades(),
-        getAllStages()
+        getAllStages(),
+        getAllStageGroups()
       ]);
       setClassGrades(gradesData || []);
       setStages(stagesData || []);
+      setStageGroups(stageGroupsData || []);
     } catch (err) {
       console.error('فشل في تحميل البيانات الأساسية', err);
     }
@@ -310,17 +311,29 @@ const Teachers = () => {
       errors.serviceRole = 'المنصب الخدمي مطلوب';
     }
 
-    const isStageRole = (role) => {
-      return role === 'STAGE_ADMIN' ||
-             role === 'STAGE_LEADER' ||
-             role === 'ASSISTANT_STAGE_LEADER' ||
-             role === 'STAGE_GROUP_LEADER' ||
+    const isClassRole = (role) => {
+      return role === 'CLASS_SERVANT' ||
+             role === 'CLASS_TEACHER' ||
+             role === 'ASSISTANT_CLASS_TEACHER';
+    };
+
+    const isStageGroupRole = (role) => {
+      return role === 'STAGE_GROUP_LEADER' ||
              role === 'ASSISTANT_STAGE_GROUP_LEADER';
     };
 
-    if (editFormData.serviceRole === 'CLASS_SERVANT') {
+    const isStageRole = (role) => {
+      return role === 'STAGE_LEADER' ||
+             role === 'ASSISTANT_STAGE_LEADER';
+    };
+
+    if (isClassRole(editFormData.serviceRole)) {
       if (!editFormData.classGradeId) {
         errors.classGradeId = 'الفصل / المرحلة مطلوبة';
+      }
+    } else if (isStageGroupRole(editFormData.serviceRole)) {
+      if (!editFormData.stageGroupId) {
+        errors.stageGroupId = 'المجموعة مطلوبة';
       }
     } else if (isStageRole(editFormData.serviceRole)) {
       if (!editFormData.stageId) {
@@ -347,7 +360,8 @@ const Teachers = () => {
         address: editFormData.address.trim(),
         serviceRole: editFormData.serviceRole,
         stageId: isStageRole(editFormData.serviceRole) && editFormData.stageId ? Number(editFormData.stageId) : null,
-        classGradeId: editFormData.serviceRole === 'CLASS_SERVANT' && editFormData.classGradeId ? Number(editFormData.classGradeId) : null
+        stageGroupId: isStageGroupRole(editFormData.serviceRole) && editFormData.stageGroupId ? Number(editFormData.stageGroupId) : null,
+        classGradeId: isClassRole(editFormData.serviceRole) && editFormData.classGradeId ? Number(editFormData.classGradeId) : null
       };
 
       await updateTeacher(selectedTeacher.id, payload);
@@ -525,6 +539,7 @@ const Teachers = () => {
               <th style={{ padding: '1rem', color: '#475569', fontWeight: '700' }}>الاسم</th>
               <th style={{ padding: '1rem', color: '#475569', fontWeight: '700' }}>الدور الخدمي</th>
               <th style={{ padding: '1rem', color: '#475569', fontWeight: '700' }}>المرحلة</th>
+              <th style={{ padding: '1rem', color: '#475569', fontWeight: '700' }}>المجموعة</th>
               <th style={{ padding: '1rem', color: '#475569', fontWeight: '700' }}>الصف / الفصل</th>
               <th style={{ padding: '1rem', color: '#475569', fontWeight: '700' }}>رقم الهاتف</th>
               <th style={{ padding: '1rem', color: '#475569', fontWeight: '700' }}>الإجراءات</th>
@@ -553,6 +568,9 @@ const Teachers = () => {
                   {teacher.stageName || <span style={{ color: '#cbd5e1' }}>—</span>}
                 </td>
                 <td style={{ padding: '1rem', color: '#475569' }}>
+                  {teacher.stageGroupName || <span style={{ color: '#cbd5e1' }}>—</span>}
+                </td>
+                <td style={{ padding: '1rem', color: '#475569' }}>
                   {teacher.classGradeName || <span style={{ color: '#cbd5e1' }}>—</span>}
                 </td>
                 <td style={{ padding: '1rem', color: '#475569' }}>
@@ -572,6 +590,7 @@ const Teachers = () => {
                           address: teacher.address || '',
                           serviceRole: teacher.serviceRole || '',
                           classGradeId: teacher.classGradeId ? String(teacher.classGradeId) : '',
+                          stageGroupId: teacher.stageGroupId ? String(teacher.stageGroupId) : '',
                           stageId: teacher.stageId ? String(teacher.stageId) : ''
                         });
                         setValidationErrors({});
@@ -872,11 +891,12 @@ const Teachers = () => {
                       }}
                     >
                       <option value="CLASS_SERVANT">خادم</option>
+                      <option value="CLASS_TEACHER">مسؤول الفصل</option>
+                      <option value="ASSISTANT_CLASS_TEACHER">مساعد مسؤول الفصل</option>
                       <option value="STAGE_GROUP_LEADER">أمين مجموعة</option>
                       <option value="ASSISTANT_STAGE_GROUP_LEADER">مساعد أمين مجموعة</option>
                       <option value="STAGE_LEADER">أمين مرحلة</option>
                       <option value="ASSISTANT_STAGE_LEADER">مساعد أمين مرحلة</option>
-                      <option value="STAGE_ADMIN">مسؤول مرحلة</option>
                       <option value="GENERAL_ADMIN">أمين الخدمة</option>
                     </select>
                     <Shield className="input-icon" size={18} />
@@ -887,7 +907,9 @@ const Teachers = () => {
                 </div>
 
                 {/* Conditional Service Assignment Selects */}
-                {editFormData.serviceRole === 'CLASS_SERVANT' && (
+                {(editFormData.serviceRole === 'CLASS_SERVANT' ||
+                  editFormData.serviceRole === 'CLASS_TEACHER' ||
+                  editFormData.serviceRole === 'ASSISTANT_CLASS_TEACHER') && (
                   <div>
                     <label className="form-label">الصف / الفصل</label>
                     <div className="input-container">
@@ -915,11 +937,37 @@ const Teachers = () => {
                   </div>
                 )}
 
-                {(editFormData.serviceRole === 'STAGE_ADMIN' ||
-                  editFormData.serviceRole === 'STAGE_LEADER' ||
-                  editFormData.serviceRole === 'ASSISTANT_STAGE_LEADER' ||
-                  editFormData.serviceRole === 'STAGE_GROUP_LEADER' ||
+                {(editFormData.serviceRole === 'STAGE_GROUP_LEADER' ||
                   editFormData.serviceRole === 'ASSISTANT_STAGE_GROUP_LEADER') && (
+                  <div>
+                    <label className="form-label">المجموعة</label>
+                    <div className="input-container">
+                      <select
+                        name="stageGroupId"
+                        value={editFormData.stageGroupId}
+                        onChange={handleEditChange}
+                        className="form-select"
+                        style={{
+                          borderColor: validationErrors.stageGroupId ? '#ef4444' : '#cbd5e1'
+                        }}
+                      >
+                        <option value="">اختر المجموعة</option>
+                        {stageGroups.map((group) => (
+                          <option key={group.id} value={String(group.id)}>
+                            {group.name}
+                          </option>
+                        ))}
+                      </select>
+                      <Filter className="input-icon" size={18} />
+                    </div>
+                    {validationErrors.stageGroupId && (
+                      <p className="field-error">{validationErrors.stageGroupId}</p>
+                    )}
+                  </div>
+                )}
+
+                {(editFormData.serviceRole === 'STAGE_LEADER' ||
+                  editFormData.serviceRole === 'ASSISTANT_STAGE_LEADER') && (
                   <div>
                     <label className="form-label">المرحلة</label>
                     <div className="input-container">

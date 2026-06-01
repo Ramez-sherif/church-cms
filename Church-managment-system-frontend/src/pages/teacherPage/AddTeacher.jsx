@@ -18,13 +18,14 @@ import {
 
 import { addTeacher } from '../../services/teacher.service';
 import { getAllClassGrades } from '../../services/classGrade.service';
-import { getAllStages } from '../../services/stage.service';
+import { getAllStages, getAllStageGroups } from '../../services/stage.service';
 
 const AddTeacher = () => {
   const navigate = useNavigate();
 
   const [grades, setGrades] = useState([]);
   const [stages, setStages] = useState([]);
+  const [stageGroups, setStageGroups] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -43,6 +44,7 @@ const AddTeacher = () => {
     address: '',
     serviceRole: 'CLASS_SERVANT',
     classGradeId: '',
+    stageGroupId: '',
     stageId: '',
     username: '',
     password: ''
@@ -54,12 +56,14 @@ const AddTeacher = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [gradesData, stagesData] = await Promise.all([
+        const [gradesData, stagesData, stageGroupsData] = await Promise.all([
           getAllClassGrades(),
-          getAllStages()
+          getAllStages(),
+          getAllStageGroups()
         ]);
         setGrades(gradesData || []);
         setStages(stagesData || []);
+        setStageGroups(stageGroupsData || []);
       } catch (err) {
         setError('فشل في تحميل البيانات الأساسية');
         console.error(err);
@@ -80,6 +84,7 @@ const AddTeacher = () => {
       };
       if (name === 'serviceRole') {
         updated.classGradeId = '';
+        updated.stageGroupId = '';
         updated.stageId = '';
       }
       return updated;
@@ -93,6 +98,7 @@ const AddTeacher = () => {
       };
       if (name === 'serviceRole') {
         updatedErrors.classGradeId = '';
+        updatedErrors.stageGroupId = '';
         updatedErrors.stageId = '';
       }
       return updatedErrors;
@@ -132,18 +138,30 @@ const AddTeacher = () => {
       errors.serviceRole = 'المنصب الخدمي مطلوب';
     }
 
-    const isStageRole = (role) => {
-      return role === 'STAGE_ADMIN' ||
-             role === 'STAGE_LEADER' ||
-             role === 'ASSISTANT_STAGE_LEADER' ||
-             role === 'STAGE_GROUP_LEADER' ||
+    const isClassRole = (role) => {
+      return role === 'CLASS_SERVANT' ||
+             role === 'CLASS_TEACHER' ||
+             role === 'ASSISTANT_CLASS_TEACHER';
+    };
+
+    const isStageGroupRole = (role) => {
+      return role === 'STAGE_GROUP_LEADER' ||
              role === 'ASSISTANT_STAGE_GROUP_LEADER';
     };
 
+    const isStageRole = (role) => {
+      return role === 'STAGE_LEADER' ||
+             role === 'ASSISTANT_STAGE_LEADER';
+    };
+
     // Role-based service assignment validation
-    if (formData.serviceRole === 'CLASS_SERVANT') {
+    if (isClassRole(formData.serviceRole)) {
       if (!formData.classGradeId) {
         errors.classGradeId = 'الفصل / المرحلة مطلوبة';
+      }
+    } else if (isStageGroupRole(formData.serviceRole)) {
+      if (!formData.stageGroupId) {
+        errors.stageGroupId = 'المجموعة مطلوبة';
       }
     } else if (isStageRole(formData.serviceRole)) {
       if (!formData.stageId) {
@@ -182,12 +200,20 @@ const AddTeacher = () => {
     setSuccess(false);
     setValidationErrors({});
 
-    const isStageRole = (role) => {
-      return role === 'STAGE_ADMIN' ||
-             role === 'STAGE_LEADER' ||
-             role === 'ASSISTANT_STAGE_LEADER' ||
-             role === 'STAGE_GROUP_LEADER' ||
+    const isClassRole = (role) => {
+      return role === 'CLASS_SERVANT' ||
+             role === 'CLASS_TEACHER' ||
+             role === 'ASSISTANT_CLASS_TEACHER';
+    };
+
+    const isStageGroupRole = (role) => {
+      return role === 'STAGE_GROUP_LEADER' ||
              role === 'ASSISTANT_STAGE_GROUP_LEADER';
+    };
+
+    const isStageRole = (role) => {
+      return role === 'STAGE_LEADER' ||
+             role === 'ASSISTANT_STAGE_LEADER';
     };
 
     const payload = {
@@ -198,7 +224,8 @@ const AddTeacher = () => {
       address: formData.address.trim(),
       serviceRole: formData.serviceRole,
       stageId: isStageRole(formData.serviceRole) && formData.stageId ? Number(formData.stageId) : null,
-      classGradeId: formData.serviceRole === 'CLASS_SERVANT' && formData.classGradeId ? Number(formData.classGradeId) : null,
+      stageGroupId: isStageGroupRole(formData.serviceRole) && formData.stageGroupId ? Number(formData.stageGroupId) : null,
+      classGradeId: isClassRole(formData.serviceRole) && formData.classGradeId ? Number(formData.classGradeId) : null,
       username: formData.username.trim(),
       password: formData.password
     };
@@ -474,11 +501,12 @@ const AddTeacher = () => {
                   }}
                 >
                   <option value="CLASS_SERVANT">خادم</option>
+                  <option value="CLASS_TEACHER">مسؤول الفصل</option>
+                  <option value="ASSISTANT_CLASS_TEACHER">مساعد مسؤول الفصل</option>
                   <option value="STAGE_GROUP_LEADER">أمين مجموعة</option>
                   <option value="ASSISTANT_STAGE_GROUP_LEADER">مساعد أمين مجموعة</option>
                   <option value="STAGE_LEADER">أمين مرحلة</option>
                   <option value="ASSISTANT_STAGE_LEADER">مساعد أمين مرحلة</option>
-                  <option value="STAGE_ADMIN">مسؤول مرحلة</option>
                   <option value="GENERAL_ADMIN">أمين الخدمة</option>
                 </select>
                 <Shield className="input-icon" size={18} />
@@ -489,7 +517,9 @@ const AddTeacher = () => {
             </div>
 
             {/* Conditional Service Assignment Selects */}
-            {formData.serviceRole === 'CLASS_SERVANT' && (
+            {(formData.serviceRole === 'CLASS_SERVANT' ||
+              formData.serviceRole === 'CLASS_TEACHER' ||
+              formData.serviceRole === 'ASSISTANT_CLASS_TEACHER') && (
               <div>
                 <label className="form-label">الصف / الفصل</label>
                 <div className="input-container">
@@ -517,11 +547,37 @@ const AddTeacher = () => {
               </div>
             )}
 
-            {(formData.serviceRole === 'STAGE_ADMIN' ||
-              formData.serviceRole === 'STAGE_LEADER' ||
-              formData.serviceRole === 'ASSISTANT_STAGE_LEADER' ||
-              formData.serviceRole === 'STAGE_GROUP_LEADER' ||
+            {(formData.serviceRole === 'STAGE_GROUP_LEADER' ||
               formData.serviceRole === 'ASSISTANT_STAGE_GROUP_LEADER') && (
+              <div>
+                <label className="form-label">المجموعة</label>
+                <div className="input-container">
+                  <select
+                    name="stageGroupId"
+                    value={formData.stageGroupId}
+                    onChange={handleChange}
+                    className="form-select"
+                    style={{
+                      borderColor: validationErrors.stageGroupId ? '#ef4444' : '#cbd5e1'
+                    }}
+                  >
+                    <option value="">اختر المجموعة</option>
+                    {stageGroups.map((group) => (
+                      <option key={group.id} value={String(group.id)}>
+                        {group.name}
+                      </option>
+                    ))}
+                  </select>
+                  <Filter className="input-icon" size={18} />
+                </div>
+                {validationErrors.stageGroupId && (
+                  <p className="field-error">{validationErrors.stageGroupId}</p>
+                )}
+              </div>
+            )}
+
+            {(formData.serviceRole === 'STAGE_LEADER' ||
+              formData.serviceRole === 'ASSISTANT_STAGE_LEADER') && (
               <div>
                 <label className="form-label">المرحلة</label>
                 <div className="input-container">
@@ -552,7 +608,7 @@ const AddTeacher = () => {
             {formData.serviceRole === 'GENERAL_ADMIN' && (
               <div className="grid-full-width" style={{ marginTop: '0.5rem' }}>
                 <p style={{ color: '#64748b', fontSize: '0.95rem', fontWeight: '600', margin: 0 }}>
-                  ℹ️ أمين الخدمة ليس مرتبطًا بمرحلة
+                  ℹ️ أمين الخدمة غير مرتبط بمرحلة أو مجموعة أو فصل
                 </p>
               </div>
             )}
