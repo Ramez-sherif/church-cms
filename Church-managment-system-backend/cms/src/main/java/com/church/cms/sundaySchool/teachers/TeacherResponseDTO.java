@@ -27,6 +27,13 @@ public class TeacherResponseDTO {
     private ServiceRole serviceRole;
 
     // =========================
+    // Stage
+    // =========================
+    private Long stageId;
+
+    private String stageName;
+
+    // =========================
     // Class Grade
     // =========================
     private Long classGradeId;

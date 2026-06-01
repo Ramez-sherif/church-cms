@@ -48,6 +48,11 @@ public class TeacherUpdateRequestDTO {
     private ServiceRole serviceRole;
 
     // =========================
+    // Responsible Stage
+    // =========================
+    private Long stageId;
+
+    // =========================
     // Responsible Class
     // =========================
     private Long classGradeId;

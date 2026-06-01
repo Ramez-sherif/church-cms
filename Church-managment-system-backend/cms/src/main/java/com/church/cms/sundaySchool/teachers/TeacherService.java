@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import com.church.cms.auth.Account;
 import com.church.cms.auth.AccountRepository;
 
+import com.church.cms.shared.exceptions.BadRequestException;
 import com.church.cms.shared.exceptions.ConflictException;
 import com.church.cms.shared.exceptions.NotFoundException;
 
@@ -17,6 +18,8 @@ import com.church.cms.sundaySchool.common.UserRole;
 
 import com.church.cms.sundaySchool.grades.ClassGrade;
 import com.church.cms.sundaySchool.grades.ClassGradeService;
+import com.church.cms.sundaySchool.stages.Stage;
+import com.church.cms.sundaySchool.stages.StageService;
 
 import jakarta.transaction.Transactional;
 
@@ -35,6 +38,52 @@ public class TeacherService {
 
         private final PasswordEncoder passwordEncoder;
 
+        private final StageService stageService;
+
+        // =========================
+        // Role Helpers
+        // =========================
+        private boolean isStageRole(ServiceRole role) {
+                return role == ServiceRole.STAGE_LEADER
+                                || role == ServiceRole.ASSISTANT_STAGE_LEADER
+                                || role == ServiceRole.STAGE_GROUP_LEADER
+                                || role == ServiceRole.ASSISTANT_STAGE_GROUP_LEADER;
+        }
+
+        private boolean isClassServant(ServiceRole role) {
+                return role == ServiceRole.CLASS_SERVANT;
+        }
+
+        private boolean isGeneralAdmin(ServiceRole role) {
+                return role == ServiceRole.GENERAL_ADMIN;
+        }
+
+        // =========================
+        // Validate Role and Assignments
+        // =========================
+        private void validateTeacherRoleAndAssignments(ServiceRole serviceRole, Long stageId, Long classGradeId) {
+                if (isGeneralAdmin(serviceRole)) {
+                        if (stageId != null || classGradeId != null) {
+                                throw new BadRequestException(
+                                                "GENERAL_ADMIN cannot be assigned to stage or class grade");
+                        }
+                } else if (isClassServant(serviceRole)) {
+                        if (classGradeId == null) {
+                                throw new BadRequestException("Class grade ID is required for CLASS_SERVANT role");
+                        }
+                        if (stageId != null) {
+                                throw new BadRequestException("CLASS_SERVANT cannot manually assign stage");
+                        }
+                } else if (isStageRole(serviceRole)) {
+                        if (stageId == null) {
+                                throw new BadRequestException("Stage ID is required for " + serviceRole + " role");
+                        }
+                        if (classGradeId != null) {
+                                throw new BadRequestException("Stage leaders cannot be assigned to class grade");
+                        }
+                }
+        }
+
         // =========================
         // Add Teacher
         // =========================
@@ -52,15 +101,20 @@ public class TeacherService {
                 }
 
                 // =========================
-                // Get Class Grade
+                // Validate Role and Assignments
+                // =========================
+                validateTeacherRoleAndAssignments(dto.getServiceRole(), dto.getStageId(), dto.getClassGradeId());
+
+                // =========================
+                // Get Class Grade & Stage
                 // =========================
                 ClassGrade grade = null;
+                Stage stage = null;
 
-                if (dto.getClassGradeId() != null) {
-
-                        grade = classGradeService
-                                        .getClassGradeById(
-                                                        dto.getClassGradeId());
+                if (isClassServant(dto.getServiceRole())) {
+                        grade = classGradeService.getClassGradeById(dto.getClassGradeId());
+                } else if (isStageRole(dto.getServiceRole())) {
+                        stage = stageService.getById(dto.getStageId());
                 }
 
                 // =========================
@@ -68,17 +122,8 @@ public class TeacherService {
                 // =========================
                 Teacher teacher = TeacherMapper.toEntity(
                                 dto,
-                                grade);
-
-                // =========================
-                // GENERAL ADMIN
-                // No class grade
-                // =========================
-                if (dto.getServiceRole() == ServiceRole.GENERAL_ADMIN) {
-
-                        teacher.setClassGrade(
-                                        null);
-                }
+                                grade,
+                                stage);
 
                 // =========================
                 // Save Teacher
@@ -177,15 +222,20 @@ public class TeacherService {
                 Teacher teacher = getTeacherById(id);
 
                 // =========================
-                // Get Class Grade
+                // Validate Role and Assignments
+                // =========================
+                validateTeacherRoleAndAssignments(dto.getServiceRole(), dto.getStageId(), dto.getClassGradeId());
+
+                // =========================
+                // Get Class Grade & Stage
                 // =========================
                 ClassGrade grade = null;
+                Stage stage = null;
 
-                if (dto.getClassGradeId() != null) {
-
-                        grade = classGradeService
-                                        .getClassGradeById(
-                                                        dto.getClassGradeId());
+                if (isClassServant(dto.getServiceRole())) {
+                        grade = classGradeService.getClassGradeById(dto.getClassGradeId());
+                } else if (isStageRole(dto.getServiceRole())) {
+                        stage = stageService.getById(dto.getStageId());
                 }
 
                 // =========================
@@ -209,19 +259,20 @@ public class TeacherService {
                 teacher.setServiceRole(
                                 dto.getServiceRole());
 
-                // =========================
-                // GENERAL ADMIN
-                // No class grade
-                // =========================
-                if (dto.getServiceRole() == ServiceRole.GENERAL_ADMIN) {
-
-                        teacher.setClassGrade(
-                                        null);
-
+                // Assign relationships based on role
+                if (isClassServant(dto.getServiceRole())) {
+                        teacher.setClassGrade(grade);
+                        if (grade != null && grade.getStageGroup() != null) {
+                                teacher.setStage(grade.getStageGroup().getStage());
+                        } else {
+                                teacher.setStage(null);
+                        }
+                } else if (isStageRole(dto.getServiceRole())) {
+                        teacher.setStage(stage);
+                        teacher.setClassGrade(null);
                 } else {
-
-                        teacher.setClassGrade(
-                                        grade);
+                        teacher.setStage(null);
+                        teacher.setClassGrade(null);
                 }
 
                 Teacher updatedTeacher = teacherRepository.save(

@@ -2,6 +2,7 @@ package com.church.cms.sundaySchool.teachers;
 
 import com.church.cms.sundaySchool.common.ServiceRole;
 import com.church.cms.sundaySchool.grades.ClassGrade;
+import com.church.cms.sundaySchool.stages.Stage;
 
 public class TeacherMapper {
 
@@ -10,7 +11,8 @@ public class TeacherMapper {
         // =========================
         public static Teacher toEntity(
                         TeacherRequestDTO dto,
-                        ClassGrade grade) {
+                        ClassGrade grade,
+                        Stage stage) {
 
                 Teacher teacher = new Teacher();
 
@@ -33,30 +35,24 @@ public class TeacherMapper {
                                 dto.getServiceRole());
 
                 // =========================
-                // Roles That Need Class
+                // Role-based assignments
                 // =========================
-                if (
-
-                dto.getServiceRole() == ServiceRole.CLASS_SERVANT
-
-                                ||
-
-                                dto.getServiceRole() == ServiceRole.STAGE_GROUP_LEADER
-
-                                ||
-
-                                dto.getServiceRole() == ServiceRole.ASSISTANT_STAGE_GROUP_LEADER
-
-                                ||
-
-                                dto.getServiceRole() == ServiceRole.STAGE_LEADER
-
-                                ||
-
-                                dto.getServiceRole() == ServiceRole.ASSISTANT_STAGE_LEADER) {
-
-                        teacher.setClassGrade(
-                                        grade);
+                if (dto.getServiceRole() == ServiceRole.CLASS_SERVANT) {
+                        teacher.setClassGrade(grade);
+                        if (grade != null && grade.getStageGroup() != null) {
+                                teacher.setStage(grade.getStageGroup().getStage());
+                        } else {
+                                teacher.setStage(null);
+                        }
+                } else if (dto.getServiceRole() == ServiceRole.STAGE_LEADER
+                                || dto.getServiceRole() == ServiceRole.ASSISTANT_STAGE_LEADER
+                                || dto.getServiceRole() == ServiceRole.STAGE_GROUP_LEADER
+                                || dto.getServiceRole() == ServiceRole.ASSISTANT_STAGE_GROUP_LEADER) {
+                        teacher.setStage(stage);
+                        teacher.setClassGrade(null);
+                } else {
+                        teacher.setStage(null);
+                        teacher.setClassGrade(null);
                 }
 
                 return teacher;
@@ -90,6 +86,13 @@ public class TeacherMapper {
 
                 dto.setServiceRole(
                                 teacher.getServiceRole());
+
+                if (teacher.getStage() != null) {
+                        dto.setStageId(
+                                        teacher.getStage().getId());
+                        dto.setStageName(
+                                        teacher.getStage().getName());
+                }
 
                 if (teacher.getClassGrade() != null) {
 
