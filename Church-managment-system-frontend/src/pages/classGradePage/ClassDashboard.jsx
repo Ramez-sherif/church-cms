@@ -5,21 +5,17 @@ import {
   GraduationCap,
   Layers,
   Users,
-  BookOpen,
-  Calendar,
-  ShieldAlert,
   ShieldCheck,
-  UserCheck,
   Phone,
   Briefcase,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Settings,
+  ListTodo
 } from 'lucide-react';
 
 import { getAllClassGrades } from '../../services/classGrade.service';
 import { getAllTeachers } from '../../services/teacher.service';
-import { getLessonsByClassGrade, getLastLessonByClassGrade } from '../../services/lesson.service';
-import { getAttendanceByClassGradeId } from '../../services/attendance.service';
 
 const ClassDashboard = () => {
   const { classGradeId } = useParams();
@@ -35,17 +31,6 @@ const ClassDashboard = () => {
     assistantClassTeacher: null
   });
   const [servants, setServants] = useState([]);
-  const [attendanceSummary, setAttendanceSummary] = useState({
-    present: 0,
-    absent: 0,
-    percentage: 0
-  });
-  const [lessonsInfo, setLessonsInfo] = useState({
-    total: 0,
-    lastLesson: null,
-    upcomingLesson: null
-  });
-
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -54,12 +39,9 @@ const ClassDashboard = () => {
       setLoading(true);
       setError('');
       try {
-        const [grades, teachers, lessons, lastLesson, attendance] = await Promise.all([
+        const [grades, teachers] = await Promise.all([
           getAllClassGrades(),
-          getAllTeachers(),
-          getLessonsByClassGrade(classGradeId),
-          getLastLessonByClassGrade(classGradeId).catch(() => null), // Catch 404 if no lessons exist yet
-          getAttendanceByClassGradeId(classGradeId)
+          getAllTeachers()
         ]);
 
         // 1. Find Current Class Grade Info
@@ -107,39 +89,6 @@ const ClassDashboard = () => {
         );
         setServants(classServants);
 
-        // 4. Servants Attendance Summary
-        const teacherAttendance = attendance.filter((rec) => rec.userRole === 'TEACHER');
-        const presentCount = teacherAttendance.filter((rec) => rec.status === true).length;
-        const absentCount = teacherAttendance.filter((rec) => rec.status === false).length;
-        const totalAttendance = teacherAttendance.length;
-        const percentage = totalAttendance > 0 ? Math.round((presentCount / totalAttendance) * 100) : 0;
-
-        setAttendanceSummary({
-          present: presentCount,
-          absent: absentCount,
-          percentage
-        });
-
-        // 5. Lessons Info
-        // Sort lessons by date to locate the upcoming one
-        const sortedLessons = [...(lessons || [])].sort(
-          (a, b) => new Date(a.date || '').getTime() - new Date(b.date || '').getTime()
-        );
-
-        let upcoming = null;
-        if (lastLesson) {
-          upcoming = sortedLessons.find(
-            (l) => new Date(l.date || '').getTime() > new Date(lastLesson.date || '').getTime()
-          );
-        } else {
-          upcoming = sortedLessons.find((l) => new Date(l.date || '').getTime() >= new Date().getTime());
-        }
-
-        setLessonsInfo({
-          total: lessons ? lessons.length : 0,
-          lastLesson: lastLesson || null,
-          upcomingLesson: upcoming || null
-        });
       } catch (err) {
         setError(err.message || 'فشل في تحميل بيانات لوحة التحكم');
         console.error(err);
@@ -490,7 +439,7 @@ const ClassDashboard = () => {
         </div>
 
         {/* =========================
-            3. Servants Attendance Summary Widget
+            3. Quick Actions Widget
         ========================= */}
         <div
           style={{
@@ -502,99 +451,75 @@ const ClassDashboard = () => {
             boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between'
+            gap: '1.5rem'
           }}
           className="responsive-column-4"
         >
-          <div>
-            <h2
-              style={{
-                fontSize: '1.2rem',
-                fontWeight: '800',
-                color: '#0f172a',
-                margin: '0 0 1.5rem 0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                borderBottom: '2px solid #f1f5f9',
-                paddingBottom: '0.75rem'
-              }}
-            >
-              <UserCheck size={22} color="#059669" />
-              حضور الخدام
-            </h2>
-
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                margin: '1.5rem 0'
-              }}
-            >
-              <div
-                style={{
-                  position: 'relative',
-                  width: '120px',
-                  height: '120px',
-                  borderRadius: '50%',
-                  background: `conic-gradient(#059669 ${attendanceSummary.percentage}%, #f1f5f9 ${attendanceSummary.percentage}% 100%)`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <div
-                  style={{
-                    position: 'absolute',
-                    width: '100px',
-                    height: '100px',
-                    borderRadius: '50%',
-                    backgroundColor: 'white',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <span style={{ fontSize: '1.5rem', fontWeight: '800', color: '#0f172a' }}>
-                    {attendanceSummary.percentage}%
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '700' }}>نسبة الحضور</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
+          <h2
             style={{
+              fontSize: '1.2rem',
+              fontWeight: '800',
+              color: '#0f172a',
+              margin: 0,
               display: 'flex',
-              justifyContent: 'space-around',
-              backgroundColor: '#f8fafc',
-              padding: '1rem',
-              borderRadius: '0.75rem',
-              gap: '1rem'
+              alignItems: 'center',
+              gap: '0.5rem',
+              borderBottom: '2px solid #f1f5f9',
+              paddingBottom: '0.75rem'
             }}
           >
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#059669' }}>
-                {attendanceSummary.present}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '700', marginTop: '0.25rem' }}>
-                الحاضرين
-              </div>
-            </div>
+            <ListTodo size={22} color="#7c3aed" />
+            إجراءات سريعة
+          </h2>
 
-            <div style={{ width: '1px', backgroundColor: '#e2e8f0' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <button
+              onClick={() => navigate('/dashboard/teachers')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                padding: '0.85rem',
+                backgroundColor: '#2563eb',
+                color: 'white',
+                border: 'none',
+                borderRadius: '0.75rem',
+                cursor: 'pointer',
+                fontWeight: '700',
+                fontSize: '0.95rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#1d4ed8')}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+            >
+              <Users size={18} />
+              إدارة الخدام
+            </button>
 
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#ef4444' }}>
-                {attendanceSummary.absent}
-              </div>
-              <div style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '700', marginTop: '0.25rem' }}>
-                الغائبين
-              </div>
-            </div>
+            <button
+              onClick={() => navigate('/dashboard/teachers')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                padding: '0.85rem',
+                backgroundColor: '#f1f5f9',
+                color: '#1e293b',
+                border: '1px solid #e2e8f0',
+                borderRadius: '0.75rem',
+                cursor: 'pointer',
+                fontWeight: '700',
+                fontSize: '0.95rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e2e8f0')}
+              onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#f1f5f9')}
+            >
+              <ShieldCheck size={18} color="#7c3aed" />
+              عرض هيكل القيادة
+            </button>
           </div>
         </div>
 
@@ -603,14 +528,13 @@ const ClassDashboard = () => {
         ========================= */}
         <div
           style={{
-            gridColumn: '1 / span 8',
+            gridColumn: '1 / span 12',
             backgroundColor: '#ffffff',
             borderRadius: '1.25rem',
             padding: '2rem',
             border: '1px solid #e2e8f0',
             boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)'
           }}
-          className="responsive-column-8"
         >
           <h2
             style={{
@@ -642,10 +566,10 @@ const ClassDashboard = () => {
                       الاسم
                     </th>
                     <th style={{ padding: '0.75rem 0.5rem', color: '#475569', fontWeight: '700', fontSize: '0.9rem' }}>
-                      الدور الخدمي
+                      رقم الهاتف
                     </th>
                     <th style={{ padding: '0.75rem 0.5rem', color: '#475569', fontWeight: '700', fontSize: '0.9rem' }}>
-                      رقم الهاتف
+                      الدور الخدمي
                     </th>
                   </tr>
                 </thead>
@@ -654,6 +578,9 @@ const ClassDashboard = () => {
                     <tr key={servant.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={{ padding: '0.75rem 0.5rem', fontWeight: '700', color: '#0f172a', fontSize: '0.9rem' }}>
                         {servant.firstName} {servant.lastName}
+                      </td>
+                      <td style={{ padding: '0.75rem 0.5rem', color: '#64748b', fontSize: '0.85rem' }}>
+                        {servant.phoneNumber}
                       </td>
                       <td style={{ padding: '0.75rem 0.5rem', color: '#475569', fontSize: '0.85rem' }}>
                         <span
@@ -668,86 +595,12 @@ const ClassDashboard = () => {
                           خادم
                         </span>
                       </td>
-                      <td style={{ padding: '0.75rem 0.5rem', color: '#64748b', fontSize: '0.85rem' }}>
-                        {servant.phoneNumber}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           )}
-        </div>
-
-        {/* =========================
-            5. Lessons & Curriculum Widget
-        ========================= */}
-        <div
-          style={{
-            gridColumn: '9 / span 4',
-            backgroundColor: '#ffffff',
-            borderRadius: '1.25rem',
-            padding: '2rem',
-            border: '1px solid #e2e8f0',
-            boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between'
-          }}
-          className="responsive-column-4"
-        >
-          <div>
-            <h2
-              style={{
-                fontSize: '1.2rem',
-                fontWeight: '800',
-                color: '#0f172a',
-                margin: '0 0 1.5rem 0',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                borderBottom: '2px solid #f1f5f9',
-                paddingBottom: '0.75rem'
-              }}
-            >
-              <BookOpen size={22} color="#7c3aed" />
-              المنهج والدروس
-            </h2>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
-              <div>
-                <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '700' }}>الدرس الأخير</div>
-                <div style={{ fontSize: '0.95rem', fontWeight: '800', color: '#1e293b', marginTop: '0.25rem' }}>
-                  {lessonsInfo.lastLesson ? lessonsInfo.lastLesson.title : 'لا يوجد'}
-                </div>
-              </div>
-
-              <div>
-                <div style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '700' }}>الدرس القادم</div>
-                <div style={{ fontSize: '0.95rem', fontWeight: '800', color: '#1e293b', marginTop: '0.25rem' }}>
-                  {lessonsInfo.upcomingLesson ? lessonsInfo.upcomingLesson.title : 'لا يوجد'}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div
-            style={{
-              backgroundColor: '#faf5ff',
-              border: '1px solid #f3e8ff',
-              padding: '1rem',
-              borderRadius: '0.75rem',
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginTop: '1.5rem'
-            }}
-          >
-            <span style={{ fontSize: '0.85rem', fontWeight: '700', color: '#6b21a8' }}>إجمالي دروس المنهج:</span>
-            <span style={{ fontSize: '1.25rem', fontWeight: '800', color: '#7c3aed' }}>
-              {lessonsInfo.total}
-            </span>
-          </div>
         </div>
       </div>
 

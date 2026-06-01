@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 import {
   UserPlus,
@@ -36,6 +36,9 @@ const Teachers = () => {
 
   const [searchTerm, setSearchTerm] =
     useState('');
+
+  const [selectedRoleFilter, setSelectedRoleFilter] =
+    useState('ALL');
 
   const [loading, setLoading] =
     useState(false);
@@ -157,42 +160,24 @@ const Teachers = () => {
   };
 
   // =========================
-  // Role Badge Style
+  // Role Badge Style & Color Map
   // =========================
+  const roleColorMap = {
+    GENERAL_ADMIN: { backgroundColor: '#f3e8ff', color: '#6b21a8' },
+    STAGE_LEADER: { backgroundColor: '#fee2e2', color: '#991b1b' },
+    ASSISTANT_STAGE_LEADER: { backgroundColor: '#fce7f3', color: '#9d174d' },
+    STAGE_GROUP_LEADER: { backgroundColor: '#ffedd5', color: '#c2410c' },
+    ASSISTANT_STAGE_GROUP_LEADER: { backgroundColor: '#f5e6d3', color: '#78350f' },
+    CLASS_TEACHER: { backgroundColor: '#dcfce7', color: '#166534' },
+    ASSISTANT_CLASS_TEACHER: { backgroundColor: '#fef9c3', color: '#854d0e' },
+    CLASS_SERVANT: { backgroundColor: '#dbeafe', color: '#1e40af' }
+  };
+
   const getRoleBadgeStyle = (role) => {
-
-    switch (role) {
-
-      case 'GENERAL_ADMIN':
-
-        return {
-          backgroundColor: '#dcfce7',
-          color: '#166534'
-        };
-
-      case 'STAGE_LEADER':
-      case 'ASSISTANT_STAGE_LEADER':
-
-        return {
-          backgroundColor: '#dbeafe',
-          color: '#1d4ed8'
-        };
-
-      case 'STAGE_GROUP_LEADER':
-      case 'ASSISTANT_STAGE_GROUP_LEADER':
-
-        return {
-          backgroundColor: '#ffedd5',
-          color: '#ea580c'
-        };
-
-      default:
-
-        return {
-          backgroundColor: '#eff6ff',
-          color: '#2563eb'
-        };
-    }
+    return roleColorMap[role] || {
+      backgroundColor: '#eff6ff',
+      color: '#2563eb'
+    };
   };
 
   // =========================
@@ -382,18 +367,36 @@ const Teachers = () => {
   // =========================
   // Filtered Teachers
   // =========================
-  const filteredTeachers =
-    teachers.filter((t) =>
+  const filteredTeachers = useMemo(() => {
+    return teachers.filter((teacher) => {
+      // 1. Quick Role Filter
+      if (selectedRoleFilter !== 'ALL' && teacher.serviceRole !== selectedRoleFilter) {
+        return false;
+      }
 
-      `${t.firstName} ${t.lastName}`
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
+      // 2. Text Search Filter
+      if (!searchTerm.trim()) {
+        return true;
+      }
 
-      ||
+      const translatedRoleName = translateRole(teacher.serviceRole);
+      const searchableText = [
+        teacher.firstName,
+        teacher.lastName,
+        `${teacher.firstName} ${teacher.lastName}`,
+        teacher.phoneNumber,
+        translatedRoleName,
+        teacher.stageName,
+        teacher.stageGroupName,
+        teacher.classGradeName
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
 
-      (t.phoneNumber || '')
-        .includes(searchTerm)
-    );
+      return searchableText.includes(searchTerm.toLowerCase());
+    });
+  }, [teachers, searchTerm, selectedRoleFilter]);
 
   return (
 
@@ -471,30 +474,71 @@ const Teachers = () => {
 
       </button>
 
-      {/* Search */}
+      {/* Quick Role Filters */}
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '0.5rem',
+          marginBottom: '1rem'
+        }}
+      >
+        {[
+          { label: 'الكل', value: 'ALL' },
+          { label: 'خدام', value: 'CLASS_SERVANT' },
+          { label: 'مسؤولي الفصول', value: 'CLASS_TEACHER' },
+          { label: 'مساعدو مسؤولي الفصول', value: 'ASSISTANT_CLASS_TEACHER' },
+          { label: 'أمناء المجموعات', value: 'STAGE_GROUP_LEADER' },
+          { label: 'مساعدو أمناء المجموعات', value: 'ASSISTANT_STAGE_GROUP_LEADER' },
+          { label: 'أمناء المراحل', value: 'STAGE_LEADER' },
+          { label: 'مساعدو أمناء المراحل', value: 'ASSISTANT_STAGE_LEADER' },
+          { label: 'أمين الخدمة', value: 'GENERAL_ADMIN' }
+        ].map((chip) => {
+          const isSelected = selectedRoleFilter === chip.value;
+          return (
+            <button
+              key={chip.value}
+              onClick={() => setSelectedRoleFilter(chip.value)}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '2rem',
+                fontSize: '0.85rem',
+                fontWeight: '700',
+                border: isSelected ? '2px solid #2563eb' : '1px solid #e2e8f0',
+                backgroundColor: isSelected ? '#eff6ff' : '#ffffff',
+                color: isSelected ? '#2563eb' : '#64748b',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                fontFamily: 'Cairo, sans-serif'
+              }}
+            >
+              {chip.label}
+            </button>
+          );
+        })}
+      </div>
 
+      {/* Search */}
       <div
         style={{
           backgroundColor: 'white',
           padding: '1rem',
           borderRadius: '1rem',
-          marginBottom: '1.5rem'
+          marginBottom: '1.5rem',
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.05)'
         }}
       >
-
         <div
           style={{
             position: 'relative'
           }}
         >
-
           <Search
             style={{
               position: 'absolute',
               right: '1rem',
               top: '50%',
-              transform:
-                'translateY(-50%)',
+              transform: 'translateY(-50%)',
               color: '#94a3b8'
             }}
             size={18}
@@ -502,29 +546,25 @@ const Teachers = () => {
 
           <input
             type="text"
-            placeholder="بحث..."
+            placeholder="ابحث بالاسم أو الهاتف أو الدور أو المرحلة أو المجموعة أو الفصل"
             value={searchTerm}
-            onChange={(e) =>
-              setSearchTerm(
-                e.target.value
-              )
-            }
+            onChange={(e) => setSearchTerm(e.target.value)}
             style={{
               width: '100%',
-              padding:
-                '0.9rem 3rem 0.9rem 1rem',
-              border:
-                '1px solid #e2e8f0',
-              borderRadius: '0.75rem'
+              padding: '0.75rem 2.75rem 0.75rem 1rem',
+              border: '1px solid #cbd5e1',
+              borderRadius: '0.75rem',
+              outline: 'none',
+              fontSize: '0.9rem',
+              fontFamily: 'Cairo, sans-serif',
+              backgroundColor: '#f8fafc',
+              boxSizing: 'border-box'
             }}
           />
-
         </div>
-
       </div>
 
       {/* Table */}
-
       <div style={{ overflowX: 'auto', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.06)', borderRadius: '1rem', minWidth: '800px' }}>
         <table
           style={{
@@ -546,7 +586,19 @@ const Teachers = () => {
             </tr>
           </thead>
           <tbody>
-            {filteredTeachers.map((teacher) => (
+            {filteredTeachers.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ padding: '4rem 2rem', textAlign: 'center' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                    <Shield size={48} color="#94a3b8" />
+                    <p style={{ color: '#64748b', fontWeight: '700', fontSize: '1rem', margin: 0 }}>
+                      لا يوجد خدام مطابقون لعملية البحث
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              filteredTeachers.map((teacher) => (
               <tr key={teacher.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                 <td style={{ padding: '1rem', fontWeight: '600', color: '#0f172a' }}>
                   {teacher.firstName} {teacher.lastName}
@@ -649,7 +701,7 @@ const Teachers = () => {
                   </div>
                 </td>
               </tr>
-            ))}
+            )))}
           </tbody>
         </table>
       </div>

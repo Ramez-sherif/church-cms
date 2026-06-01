@@ -67,14 +67,13 @@ const Sidebar = ({
     isStageAdmin;
 
   const canAccessLessons =
-    isFather ||
-    isTeacher;
+    (isFather || isTeacher) && !isGeneralAdmin;
 
   const canAccessAttendance =
-    isTeacher;
+    isTeacher && !isGeneralAdmin;
 
   const canManageStudents =
-    isTeacher;
+    isTeacher && !isGeneralAdmin;
 
   const canManageTeachers =
     isGeneralAdmin ||
