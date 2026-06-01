@@ -161,7 +161,7 @@ const ClassGrades = () => {
               right: '0.875rem',
               top: '50%',
               transform: 'translateY(-50%)',
-              color: '#94a3b8'
+              color: '#64748b'
             }}
             size={18}
           />
@@ -178,11 +178,18 @@ const ClassGrades = () => {
               outline: 'none',
               fontSize: '0.9rem',
               fontFamily: 'Cairo, sans-serif',
+              color: '#1e293b',
               backgroundColor: '#f8fafc',
               transition: 'border-color 0.2s'
             }}
-            onFocus={(e) => (e.currentTarget.style.borderColor = '#2563eb')}
-            onBlur={(e) => (e.currentTarget.style.borderColor = '#e2e8f0')}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#2563eb';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#e2e8f0';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           />
         </div>
 
@@ -466,6 +473,12 @@ const ClassGrades = () => {
               to {
                 transform: rotate(360deg);
               }
+            }
+
+            /* Search input improvements */
+            input::placeholder {
+              color: #64748b;
+              opacity: 1;
             }
           `
         }}

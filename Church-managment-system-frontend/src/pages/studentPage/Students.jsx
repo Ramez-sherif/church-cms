@@ -94,7 +94,16 @@ const Students = () => {
         flexWrap: 'wrap'
       }}>
         <div style={{ flex: 1, position: 'relative', minWidth: '250px' }}>
-          <Search style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} size={18} />
+          <Search
+            style={{
+              position: 'absolute',
+              right: '0.75rem',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#64748b'
+            }}
+            size={18}
+          />
           <input
             type="text"
             placeholder="بحث بالاسم، الكود أو رقم الهاتف..."
@@ -103,9 +112,22 @@ const Students = () => {
             style={{
               width: '100%',
               padding: '0.625rem 2.5rem 0.625rem 0.75rem',
-              border: '1px solid #e2e8f0',
+              border: '1px solid #cbd5e1',
               borderRadius: '0.5rem',
-              outline: 'none'
+              outline: 'none',
+              fontSize: '0.9rem',
+              fontFamily: 'Cairo, sans-serif',
+              backgroundColor: '#f8fafc',
+              color: '#1e293b',
+              transition: 'border-color 0.2s'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#2563eb';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#cbd5e1';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           />
         </div>

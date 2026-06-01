@@ -257,7 +257,7 @@ const Lessons = () => {
               right: '0.75rem',
               top: '50%',
               transform: 'translateY(-50%)',
-              color: '#94a3b8'
+              color: '#64748b'
             }}
             size={18}
           />
@@ -271,11 +271,23 @@ const Lessons = () => {
             }
             style={{
               width: '100%',
-              padding:
-                '0.625rem 2.5rem 0.625rem 0.75rem',
-              border: '1px solid #e2e8f0',
+              padding: '0.625rem 2.5rem 0.625rem 0.75rem',
+              border: '1px solid #cbd5e1',
               borderRadius: '0.5rem',
-              outline: 'none'
+              outline: 'none',
+              fontSize: '0.9rem',
+              fontFamily: 'Cairo, sans-serif',
+              color: '#1e293b',
+              backgroundColor: '#f8fafc',
+              transition: 'border-color 0.2s'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#2563eb';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#cbd5e1';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           />
 

@@ -539,7 +539,7 @@ const Teachers = () => {
               right: '1rem',
               top: '50%',
               transform: 'translateY(-50%)',
-              color: '#94a3b8'
+              color: '#64748b'
             }}
             size={18}
           />
@@ -558,7 +558,16 @@ const Teachers = () => {
               fontSize: '0.9rem',
               fontFamily: 'Cairo, sans-serif',
               backgroundColor: '#f8fafc',
-              boxSizing: 'border-box'
+              color: '#1e293b',
+              transition: 'border-color 0.2s'
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = '#2563eb';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(37,99,235,0.1)';
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = '#cbd5e1';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           />
         </div>
@@ -1215,7 +1224,7 @@ const Teachers = () => {
               background-color: #ffffff;
             }
 
-            .form-input::placeholder {
+            input::placeholder {
               color: #64748b;
               opacity: 1;
             }
