@@ -361,6 +361,105 @@ const LandingPage = () => {
           >
             مرحباً بكم في نظام إدارة<br />كنيسة السيدة العذراء مريم<br /><span style={{ fontSize: '2rem', fontWeight: '700', color: '#B69265' }}>العباسية الشرقية</span>
           </h1>
+
+          {/* Premium Cross Divider */}
+          <div
+            className="cross-divider"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0',
+              width: '100%',
+              maxWidth: '420px',
+              margin: '0 auto 2rem',
+              position: 'relative',
+              cursor: 'default'
+            }}
+          >
+            {/* Left blue line */}
+            <div style={{
+              flex: 1,
+              height: '1.5px',
+              background: 'linear-gradient(to right, transparent, #2563EB)',
+              boxShadow: '0 0 8px rgba(37,99,235,0.4)',
+              borderRadius: '2px'
+            }} />
+            {/* Left glow node */}
+            <div style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: '#2563EB',
+              boxShadow: '0 0 8px 2px rgba(37,99,235,0.6)',
+              flexShrink: 0
+            }} />
+            {/* Cross icon */}
+            <div style={{
+              margin: '0 14px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              position: 'relative'
+            }}>
+              {/* Glow behind cross */}
+              <div style={{
+                position: 'absolute',
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)',
+                filter: 'blur(4px)'
+              }} />
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                style={{
+                  filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.6))',
+                  position: 'relative',
+                  zIndex: 1
+                }}
+              >
+                <path
+                  d="M12 2v20M2 12h20"
+                  stroke="white"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </div>
+            {/* Right glow node */}
+            <div style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: '#B69265',
+              boxShadow: '0 0 8px 2px rgba(182,146,101,0.6)',
+              flexShrink: 0
+            }} />
+            {/* Right gold line */}
+            <div style={{
+              flex: 1,
+              height: '1.5px',
+              background: 'linear-gradient(to left, transparent, #B69265)',
+              boxShadow: '0 0 8px rgba(182,146,101,0.4)',
+              borderRadius: '2px'
+            }} />
+          </div>
+
+          {/* Divider hover animation */}
+          <style dangerouslySetInnerHTML={{ __html: `
+            .cross-divider {
+              transition: filter 0.4s ease;
+            }
+            .cross-divider:hover {
+              filter: brightness(1.3) drop-shadow(0 0 12px rgba(255,255,255,0.15));
+            }
+          `}} />
+
           <p
             style={{
               fontSize: '1.15rem',
