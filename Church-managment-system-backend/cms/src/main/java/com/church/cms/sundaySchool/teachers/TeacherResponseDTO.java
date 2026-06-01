@@ -34,6 +34,13 @@ public class TeacherResponseDTO {
     private String stageName;
 
     // =========================
+    // Stage Group
+    // =========================
+    private Long stageGroupId;
+
+    private String stageGroupName;
+
+    // =========================
     // Class Grade
     // =========================
     private Long classGradeId;

@@ -2,17 +2,15 @@ package com.church.cms.sundaySchool.common;
 
 public enum ServiceRole {
 
-    GENERAL_ADMIN,
-
-    STAGE_ADMIN,
-
-    STAGE_LEADER,
-
-    ASSISTANT_STAGE_LEADER,
+    CLASS_SERVANT,
+    CLASS_TEACHER,
+    ASSISTANT_CLASS_TEACHER,
 
     STAGE_GROUP_LEADER,
-
     ASSISTANT_STAGE_GROUP_LEADER,
 
-    CLASS_SERVANT
+    STAGE_LEADER,
+    ASSISTANT_STAGE_LEADER,
+
+    GENERAL_ADMIN
 }

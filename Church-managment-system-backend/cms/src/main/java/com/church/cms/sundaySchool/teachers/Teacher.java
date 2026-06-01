@@ -8,6 +8,7 @@ import com.church.cms.sundaySchool.common.UserRole;
 import com.church.cms.sundaySchool.grades.ClassGrade;
 import com.church.cms.sundaySchool.lessons.Lesson;
 import com.church.cms.sundaySchool.stages.Stage;
+import com.church.cms.sundaySchool.stageGroups.StageGroup;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -44,6 +45,13 @@ public class Teacher extends User {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stage_id")
     private Stage stage;
+
+    // =========================
+    // Responsible StageGroup
+    // =========================
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stage_group_id")
+    private StageGroup stageGroup;
 
     // =========================
     // Responsible Class

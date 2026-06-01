@@ -18,13 +18,12 @@ import {
 
 import { addTeacher } from '../../services/teacher.service';
 import { getAllClassGrades } from '../../services/classGrade.service';
-import { getAllStages, getAllStageGroups } from '../../services/stage.service';
+import { getAllStages } from '../../services/stage.service';
 
 const AddTeacher = () => {
   const navigate = useNavigate();
 
   const [grades, setGrades] = useState([]);
-  const [stageGroups, setStageGroups] = useState([]);
   const [stages, setStages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -44,7 +43,6 @@ const AddTeacher = () => {
     address: '',
     serviceRole: 'CLASS_SERVANT',
     classGradeId: '',
-    stageGroupId: '',
     stageId: '',
     username: '',
     password: ''
@@ -56,13 +54,11 @@ const AddTeacher = () => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const [gradesData, stageGroupsData, stagesData] = await Promise.all([
+        const [gradesData, stagesData] = await Promise.all([
           getAllClassGrades(),
-          getAllStageGroups(),
           getAllStages()
         ]);
         setGrades(gradesData || []);
-        setStageGroups(stageGroupsData || []);
         setStages(stagesData || []);
       } catch (err) {
         setError('فشل في تحميل البيانات الأساسية');
@@ -84,10 +80,7 @@ const AddTeacher = () => {
       };
       if (name === 'serviceRole') {
         updated.classGradeId = '';
-        updated.stageGroupId = '';
         updated.stageId = '';
-      } else if (name === 'stageGroupId' || name === 'stageId') {
-        updated.classGradeId = '';
       }
       return updated;
     });
@@ -98,9 +91,8 @@ const AddTeacher = () => {
         ...prev,
         [name]: ''
       };
-      if (name === 'serviceRole' || name === 'stageGroupId' || name === 'stageId') {
+      if (name === 'serviceRole') {
         updatedErrors.classGradeId = '';
-        updatedErrors.stageGroupId = '';
         updatedErrors.stageId = '';
       }
       return updatedErrors;
@@ -111,126 +103,68 @@ const AddTeacher = () => {
   // Frontend Validator
   // =========================
   const validateForm = () => {
-
     const errors = {};
 
     if (!formData.firstName.trim()) {
-
-      errors.firstName =
-        'الاسم الأول مطلوب';
-
-    } else if (
-      formData.firstName
-        .trim()
-        .length < 2
-    ) {
-
-      errors.firstName =
-        'الاسم الأول يجب أن يكون حرفين على الأقل';
+      errors.firstName = 'الاسم الأول مطلوب';
+    } else if (formData.firstName.trim().length < 2) {
+      errors.firstName = 'الاسم الأول يجب أن يكون حرفين على الأقل';
     }
 
     if (!formData.lastName.trim()) {
-
-      errors.lastName =
-        'الاسم الأخير مطلوب';
-
-    } else if (
-      formData.lastName
-        .trim()
-        .length < 2
-    ) {
-
-      errors.lastName =
-        'الاسم الأخير يجب أن يكون حرفين على الأقل';
+      errors.lastName = 'الاسم الأخير مطلوب';
+    } else if (formData.lastName.trim().length < 2) {
+      errors.lastName = 'الاسم الأخير يجب أن يكون حرفين على الأقل';
     }
 
     if (!formData.birthDate) {
-
-      errors.birthDate =
-        'تاريخ الميلاد مطلوب';
+      errors.birthDate = 'تاريخ الميلاد مطلوب';
     }
 
-    const phoneRegex =
-      /^01[0-2,5]{1}[0-9]{8}$/;
-
+    const phoneRegex = /^01[0-2,5]{1}[0-9]{8}$/;
     if (!formData.phoneNumber.trim()) {
-
-      errors.phoneNumber =
-        'رقم الهاتف مطلوب';
-
-    } else if (
-      !phoneRegex.test(
-        formData.phoneNumber.trim()
-      )
-    ) {
-
-      errors.phoneNumber =
-        'رقم هاتف مصري غير صحيح (مثال: 01xxxxxxxxx)';
+      errors.phoneNumber = 'رقم الهاتف مطلوب';
+    } else if (!phoneRegex.test(formData.phoneNumber.trim())) {
+      errors.phoneNumber = 'رقم هاتف مصري غير صحيح (مثال: 01xxxxxxxxx)';
     }
 
     if (!formData.serviceRole) {
-
-      errors.serviceRole =
-        'المنصب الخدمي مطلوب';
+      errors.serviceRole = 'المنصب الخدمي مطلوب';
     }
 
-    // =========================
+    const isStageRole = (role) => {
+      return role === 'STAGE_ADMIN' ||
+             role === 'STAGE_LEADER' ||
+             role === 'ASSISTANT_STAGE_LEADER' ||
+             role === 'STAGE_GROUP_LEADER' ||
+             role === 'ASSISTANT_STAGE_GROUP_LEADER';
+    };
+
     // Role-based service assignment validation
-    // =========================
     if (formData.serviceRole === 'CLASS_SERVANT') {
       if (!formData.classGradeId) {
         errors.classGradeId = 'الفصل / المرحلة مطلوبة';
       }
-    } else if (
-      formData.serviceRole === 'STAGE_GROUP_LEADER' ||
-      formData.serviceRole === 'ASSISTANT_STAGE_GROUP_LEADER'
-    ) {
-      if (!formData.stageGroupId) {
-        errors.stageGroupId = 'المجموعة مطلوبة';
-      }
-      if (!formData.classGradeId) {
-        errors.classGradeId = 'الفصل / المرحلة مطلوبة';
-      }
-    } else if (
-      formData.serviceRole === 'STAGE_LEADER' ||
-      formData.serviceRole === 'ASSISTANT_STAGE_LEADER' ||
-      formData.serviceRole === 'STAGE_ADMIN'
-    ) {
+    } else if (isStageRole(formData.serviceRole)) {
       if (!formData.stageId) {
         errors.stageId = 'المرحلة مطلوبة';
-      }
-      if (!formData.classGradeId) {
-        errors.classGradeId = 'الفصل / المرحلة مطلوبة';
       }
     }
 
     if (!formData.username.trim()) {
-
-      errors.username =
-        'اسم المستخدم مطلوب';
+      errors.username = 'اسم المستخدم مطلوب';
     }
 
     if (!formData.password) {
-
-      errors.password =
-        'كلمة المرور مطلوبة';
-
-    } else if (
-      formData.password
-        .length < 6
-    ) {
-
-      errors.password =
-        'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
+      errors.password = 'كلمة المرور مطلوبة';
+    } else if (formData.password.length < 6) {
+      errors.password = 'كلمة المرور يجب أن تكون 6 أحرف على الأقل';
     }
 
     setValidationErrors(errors);
-
-    return (
-      Object.keys(errors)
-        .length === 0
-    );
+    return Object.keys(errors).length === 0;
   };
+
   // =========================
   // Submit
   // =========================
@@ -248,7 +182,14 @@ const AddTeacher = () => {
     setSuccess(false);
     setValidationErrors({});
 
-    // Final payload contains ONLY classGradeId (converted to Number or null)
+    const isStageRole = (role) => {
+      return role === 'STAGE_ADMIN' ||
+             role === 'STAGE_LEADER' ||
+             role === 'ASSISTANT_STAGE_LEADER' ||
+             role === 'STAGE_GROUP_LEADER' ||
+             role === 'ASSISTANT_STAGE_GROUP_LEADER';
+    };
+
     const payload = {
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
@@ -256,7 +197,8 @@ const AddTeacher = () => {
       phoneNumber: formData.phoneNumber.trim(),
       address: formData.address.trim(),
       serviceRole: formData.serviceRole,
-      classGradeId: formData.classGradeId ? Number(formData.classGradeId) : null,
+      stageId: isStageRole(formData.serviceRole) && formData.stageId ? Number(formData.stageId) : null,
+      classGradeId: formData.serviceRole === 'CLASS_SERVANT' && formData.classGradeId ? Number(formData.classGradeId) : null,
       username: formData.username.trim(),
       password: formData.password
     };
@@ -271,7 +213,6 @@ const AddTeacher = () => {
       if (err.response?.data?.errors) {
         setValidationErrors(err.response.data.errors);
       }
-
       setError(
         err.response?.data?.message || 'حدث خطأ أثناء إضافة الخادم'
       );
@@ -550,7 +491,7 @@ const AddTeacher = () => {
             {/* Conditional Service Assignment Selects */}
             {formData.serviceRole === 'CLASS_SERVANT' && (
               <div>
-                <label className="form-label">الفصل / المرحلة</label>
+                <label className="form-label">الصف / الفصل</label>
                 <div className="input-container">
                   <select
                     name="classGradeId"
@@ -561,7 +502,7 @@ const AddTeacher = () => {
                       borderColor: validationErrors.classGradeId ? '#ef4444' : '#cbd5e1'
                     }}
                   >
-                    <option value="">اختر الفصل / المرحلة</option>
+                    <option value="">اختر الصف / الفصل</option>
                     {grades.map((grade) => (
                       <option key={grade.id} value={String(grade.id)}>
                         {grade.name}
@@ -576,168 +517,36 @@ const AddTeacher = () => {
               </div>
             )}
 
-            {(formData.serviceRole === 'STAGE_GROUP_LEADER' ||
-              formData.serviceRole === 'ASSISTANT_STAGE_GROUP_LEADER') && (
-              <>
-                <div>
-                  <label className="form-label">المجموعة</label>
-                  <div className="input-container">
-                    <select
-                      name="stageGroupId"
-                      value={formData.stageGroupId}
-                      onChange={handleChange}
-                      className="form-select"
-                      style={{
-                        borderColor: validationErrors.stageGroupId ? '#ef4444' : '#cbd5e1'
-                      }}
-                    >
-                      <option value="">اختر المجموعة</option>
-                      {stageGroups.map((group) => (
-                        <option key={group.id} value={String(group.id)}>
-                          {group.name} {group.stageName ? `(${group.stageName})` : ''}
-                        </option>
-                      ))}
-                    </select>
-                    <Filter className="input-icon" size={18} />
-                  </div>
-                  {validationErrors.stageGroupId && (
-                    <p className="field-error">{validationErrors.stageGroupId}</p>
-                  )}
-                </div>
-
-                <div>
-                  <label className="form-label">الفصل / المرحلة</label>
-                  {formData.stageGroupId && grades.filter((grade) => String(grade.stageGroupId) === String(formData.stageGroupId)).length === 0 ? (
-                    <div style={{
-                      padding: '0.85rem',
-                      backgroundColor: '#fef2f2',
-                      border: '1px solid #fee2e2',
-                      borderRadius: '0.75rem',
-                      color: '#ef4444',
-                      fontSize: '0.95rem',
-                      fontWeight: '600'
-                    }}>
-                      لا توجد فصول مرتبطة
-                    </div>
-                  ) : (
-                    <div className="input-container">
-                      <select
-                        name="classGradeId"
-                        value={formData.classGradeId}
-                        onChange={handleChange}
-                        disabled={!formData.stageGroupId}
-                        className="form-select"
-                        style={{
-                          borderColor: validationErrors.classGradeId ? '#ef4444' : '#cbd5e1',
-                          backgroundColor: !formData.stageGroupId ? '#f1f5f9' : '#ffffff',
-                          cursor: !formData.stageGroupId ? 'not-allowed' : 'pointer'
-                        }}
-                      >
-                        <option value="">
-                          {formData.stageGroupId ? 'اختر الفصل / المرحلة' : 'يرجى اختيار المجموعة أولاً'}
-                        </option>
-                        {grades
-                          .filter((grade) => String(grade.stageGroupId) === String(formData.stageGroupId))
-                          .map((grade) => (
-                            <option key={grade.id} value={String(grade.id)}>
-                              {grade.name}
-                            </option>
-                          ))}
-                      </select>
-                      <Filter className="input-icon" size={18} />
-                    </div>
-                  )}
-                  {validationErrors.classGradeId && (
-                    <p className="field-error">{validationErrors.classGradeId}</p>
-                  )}
-                </div>
-              </>
-            )}
-
-            {(formData.serviceRole === 'STAGE_LEADER' ||
+            {(formData.serviceRole === 'STAGE_ADMIN' ||
+              formData.serviceRole === 'STAGE_LEADER' ||
               formData.serviceRole === 'ASSISTANT_STAGE_LEADER' ||
-              formData.serviceRole === 'STAGE_ADMIN') && (
-              <>
-                <div>
-                  <label className="form-label">المرحلة</label>
-                  <div className="input-container">
-                    <select
-                      name="stageId"
-                      value={formData.stageId}
-                      onChange={handleChange}
-                      className="form-select"
-                      style={{
-                        borderColor: validationErrors.stageId ? '#ef4444' : '#cbd5e1'
-                      }}
-                    >
-                      <option value="">اختر المرحلة</option>
-                      {stages.map((stage) => (
-                        <option key={stage.id} value={String(stage.id)}>
-                          {stage.name}
-                        </option>
-                      ))}
-                    </select>
-                    <Filter className="input-icon" size={18} />
-                  </div>
-                  {validationErrors.stageId && (
-                    <p className="field-error">{validationErrors.stageId}</p>
-                  )}
+              formData.serviceRole === 'STAGE_GROUP_LEADER' ||
+              formData.serviceRole === 'ASSISTANT_STAGE_GROUP_LEADER') && (
+              <div>
+                <label className="form-label">المرحلة</label>
+                <div className="input-container">
+                  <select
+                    name="stageId"
+                    value={formData.stageId}
+                    onChange={handleChange}
+                    className="form-select"
+                    style={{
+                      borderColor: validationErrors.stageId ? '#ef4444' : '#cbd5e1'
+                    }}
+                  >
+                    <option value="">اختر المرحلة</option>
+                    {stages.map((stage) => (
+                      <option key={stage.id} value={String(stage.id)}>
+                        {stage.name}
+                      </option>
+                    ))}
+                  </select>
+                  <Filter className="input-icon" size={18} />
                 </div>
-
-                <div>
-                  <label className="form-label">الفصل / المرحلة</label>
-                  {(() => {
-                    const selectedStage = stages.find((s) => String(s.id) === String(formData.stageId));
-                    const filteredGrades = grades.filter((grade) => selectedStage && grade.stageName && grade.stageName === selectedStage.name);
-
-                    if (formData.stageId && filteredGrades.length === 0) {
-                      return (
-                        <div style={{
-                          padding: '0.85rem',
-                          backgroundColor: '#fef2f2',
-                          border: '1px solid #fee2e2',
-                          borderRadius: '0.75rem',
-                          color: '#ef4444',
-                          fontSize: '0.95rem',
-                          fontWeight: '600'
-                        }}>
-                          لا توجد فصول مرتبطة
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div className="input-container">
-                        <select
-                          name="classGradeId"
-                          value={formData.classGradeId}
-                          onChange={handleChange}
-                          disabled={!formData.stageId}
-                          className="form-select"
-                          style={{
-                            borderColor: validationErrors.classGradeId ? '#ef4444' : '#cbd5e1',
-                            backgroundColor: !formData.stageId ? '#f1f5f9' : '#ffffff',
-                            cursor: !formData.stageId ? 'not-allowed' : 'pointer'
-                          }}
-                        >
-                          <option value="">
-                            {formData.stageId ? 'اختر الفصل / المرحلة' : 'يرجى اختيار المرحلة أولاً'}
-                          </option>
-                          {filteredGrades.map((grade) => (
-                            <option key={grade.id} value={String(grade.id)}>
-                              {grade.name}
-                            </option>
-                          ))}
-                        </select>
-                        <Filter className="input-icon" size={18} />
-                      </div>
-                    );
-                  })()}
-                  {validationErrors.classGradeId && (
-                    <p className="field-error">{validationErrors.classGradeId}</p>
-                  )}
-                </div>
-              </>
+                {validationErrors.stageId && (
+                  <p className="field-error">{validationErrors.stageId}</p>
+                )}
+              </div>
             )}
 
             {formData.serviceRole === 'GENERAL_ADMIN' && (

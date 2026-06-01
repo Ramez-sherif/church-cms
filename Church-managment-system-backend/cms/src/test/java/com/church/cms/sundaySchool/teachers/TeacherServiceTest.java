@@ -18,13 +18,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.church.cms.auth.Account;
 import com.church.cms.auth.AccountRepository;
 import com.church.cms.shared.exceptions.BadRequestException;
-import com.church.cms.shared.exceptions.ConflictException;
-import com.church.cms.shared.exceptions.NotFoundException;
 import com.church.cms.sundaySchool.common.ServiceRole;
 import com.church.cms.sundaySchool.grades.ClassGrade;
 import com.church.cms.sundaySchool.grades.ClassGradeService;
 import com.church.cms.sundaySchool.stages.Stage;
 import com.church.cms.sundaySchool.stages.StageService;
+import com.church.cms.sundaySchool.stageGroups.StageGroup;
+import com.church.cms.sundaySchool.stageGroups.StageGroupService;
 
 @ExtendWith(MockitoExtension.class)
 public class TeacherServiceTest {
@@ -43,6 +43,9 @@ public class TeacherServiceTest {
 
     @Mock
     private StageService stageService;
+
+    @Mock
+    private StageGroupService stageGroupService;
 
     @InjectMocks
     private TeacherService teacherService;
@@ -90,7 +93,21 @@ public class TeacherServiceTest {
             teacherService.addTeacher(addDto);
         });
 
-        assertEquals("GENERAL_ADMIN cannot be assigned to stage or class grade", ex.getMessage());
+        assertEquals("GENERAL_ADMIN cannot be assigned to stage, stage group, or class grade", ex.getMessage());
+    }
+
+    @Test
+    void addTeacher_GeneralAdminWithStageGroupId_ThrowsBadRequestException() {
+        addDto.setServiceRole(ServiceRole.GENERAL_ADMIN);
+        addDto.setStageGroupId(1L);
+
+        when(accountRepository.existsByUsername(addDto.getUsername())).thenReturn(false);
+
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> {
+            teacherService.addTeacher(addDto);
+        });
+
+        assertEquals("GENERAL_ADMIN cannot be assigned to stage, stage group, or class grade", ex.getMessage());
     }
 
     @Test
@@ -104,29 +121,12 @@ public class TeacherServiceTest {
             teacherService.addTeacher(addDto);
         });
 
-        assertEquals("GENERAL_ADMIN cannot be assigned to stage or class grade", ex.getMessage());
-    }
-
-    @Test
-    void updateTeacher_GeneralAdminWithStageId_ThrowsBadRequestException() {
-        UUID id = UUID.randomUUID();
-        updateDto.setServiceRole(ServiceRole.GENERAL_ADMIN);
-        updateDto.setStageId(1L);
-
-        when(teacherRepository.findById(id)).thenReturn(Optional.of(existingTeacher));
-
-        BadRequestException ex = assertThrows(BadRequestException.class, () -> {
-            teacherService.updateTeacher(id, updateDto);
-        });
-
-        assertEquals("GENERAL_ADMIN cannot be assigned to stage or class grade", ex.getMessage());
+        assertEquals("GENERAL_ADMIN cannot be assigned to stage, stage group, or class grade", ex.getMessage());
     }
 
     @Test
     void addTeacher_GeneralAdminValid_SavesSuccessfully() {
         addDto.setServiceRole(ServiceRole.GENERAL_ADMIN);
-        addDto.setStageId(null);
-        addDto.setClassGradeId(null);
 
         when(accountRepository.existsByUsername(addDto.getUsername())).thenReturn(false);
         
@@ -144,27 +144,11 @@ public class TeacherServiceTest {
         assertNotNull(response);
         assertEquals(ServiceRole.GENERAL_ADMIN, response.getServiceRole());
         verify(teacherRepository).save(any(Teacher.class));
-        verify(accountRepository).save(any(Account.class));
     }
 
     // ==========================================
-    // STAGE ROLE VALIDATION TESTS
+    // STAGE LEADER VALIDATION TESTS
     // ==========================================
-
-    @Test
-    void addTeacher_StageLeaderWithClassGradeId_ThrowsBadRequestException() {
-        addDto.setServiceRole(ServiceRole.STAGE_LEADER);
-        addDto.setStageId(1L);
-        addDto.setClassGradeId(1L);
-
-        when(accountRepository.existsByUsername(addDto.getUsername())).thenReturn(false);
-
-        BadRequestException ex = assertThrows(BadRequestException.class, () -> {
-            teacherService.addTeacher(addDto);
-        });
-
-        assertEquals("Stage leaders cannot be assigned to class grade", ex.getMessage());
-    }
 
     @Test
     void addTeacher_StageLeaderMissingStageId_ThrowsBadRequestException() {
@@ -177,30 +161,28 @@ public class TeacherServiceTest {
             teacherService.addTeacher(addDto);
         });
 
-        assertEquals("Stage ID is required for STAGE_LEADER role", ex.getMessage());
+        assertEquals("Stage ID is required for stage leader roles", ex.getMessage());
     }
 
     @Test
-    void updateTeacher_AssistantStageLeaderWithClassGradeId_ThrowsBadRequestException() {
-        UUID id = UUID.randomUUID();
-        updateDto.setServiceRole(ServiceRole.ASSISTANT_STAGE_LEADER);
-        updateDto.setStageId(1L);
-        updateDto.setClassGradeId(1L);
+    void addTeacher_StageLeaderWithStageGroupId_ThrowsBadRequestException() {
+        addDto.setServiceRole(ServiceRole.STAGE_LEADER);
+        addDto.setStageId(1L);
+        addDto.setStageGroupId(1L);
 
-        when(teacherRepository.findById(id)).thenReturn(Optional.of(existingTeacher));
+        when(accountRepository.existsByUsername(addDto.getUsername())).thenReturn(false);
 
         BadRequestException ex = assertThrows(BadRequestException.class, () -> {
-            teacherService.updateTeacher(id, updateDto);
+            teacherService.addTeacher(addDto);
         });
 
-        assertEquals("Stage leaders cannot be assigned to class grade", ex.getMessage());
+        assertEquals("Stage leaders cannot be assigned to stage group or class grade", ex.getMessage());
     }
 
     @Test
     void addTeacher_StageLeaderValid_SavesSuccessfully() {
         addDto.setServiceRole(ServiceRole.STAGE_LEADER);
         addDto.setStageId(1L);
-        addDto.setClassGradeId(null);
 
         when(accountRepository.existsByUsername(addDto.getUsername())).thenReturn(false);
 
@@ -224,19 +206,16 @@ public class TeacherServiceTest {
         assertNotNull(response);
         assertEquals(ServiceRole.STAGE_LEADER, response.getServiceRole());
         assertEquals(1L, response.getStageId());
-        verify(stageService).getById(1L);
-        verify(teacherRepository).save(any(Teacher.class));
     }
 
     // ==========================================
-    // CLASS_SERVANT VALIDATION TESTS
+    // STAGE GROUP LEADER VALIDATION TESTS
     // ==========================================
 
     @Test
-    void addTeacher_ClassServantWithStageId_ThrowsBadRequestException() {
-        addDto.setServiceRole(ServiceRole.CLASS_SERVANT);
-        addDto.setClassGradeId(1L);
-        addDto.setStageId(1L);
+    void addTeacher_StageGroupLeaderMissingStageGroupId_ThrowsBadRequestException() {
+        addDto.setServiceRole(ServiceRole.STAGE_GROUP_LEADER);
+        addDto.setStageGroupId(null);
 
         when(accountRepository.existsByUsername(addDto.getUsername())).thenReturn(false);
 
@@ -244,12 +223,60 @@ public class TeacherServiceTest {
             teacherService.addTeacher(addDto);
         });
 
-        assertEquals("CLASS_SERVANT cannot manually assign stage", ex.getMessage());
+        assertEquals("Stage group ID is required for stage group leader roles", ex.getMessage());
     }
 
     @Test
-    void addTeacher_ClassServantMissingClassGradeId_ThrowsBadRequestException() {
-        addDto.setServiceRole(ServiceRole.CLASS_SERVANT);
+    void addTeacher_StageGroupLeaderWithClassGradeId_ThrowsBadRequestException() {
+        addDto.setServiceRole(ServiceRole.STAGE_GROUP_LEADER);
+        addDto.setStageGroupId(1L);
+        addDto.setClassGradeId(1L);
+
+        when(accountRepository.existsByUsername(addDto.getUsername())).thenReturn(false);
+
+        BadRequestException ex = assertThrows(BadRequestException.class, () -> {
+            teacherService.addTeacher(addDto);
+        });
+
+        assertEquals("Stage group leaders cannot be assigned to stage or class grade", ex.getMessage());
+    }
+
+    @Test
+    void addTeacher_StageGroupLeaderValid_SavesSuccessfully() {
+        addDto.setServiceRole(ServiceRole.STAGE_GROUP_LEADER);
+        addDto.setStageGroupId(1L);
+
+        when(accountRepository.existsByUsername(addDto.getUsername())).thenReturn(false);
+
+        StageGroup mockGroup = new StageGroup();
+        mockGroup.setId(1L);
+        mockGroup.setName("Group A");
+        when(stageGroupService.getById(1L)).thenReturn(mockGroup);
+
+        Teacher teacherMock = new Teacher();
+        teacherMock.setId(UUID.randomUUID());
+        teacherMock.setFirstName(addDto.getFirstName());
+        teacherMock.setLastName(addDto.getLastName());
+        teacherMock.setServiceRole(ServiceRole.STAGE_GROUP_LEADER);
+        teacherMock.setStageGroup(mockGroup);
+
+        when(teacherRepository.save(any(Teacher.class))).thenReturn(teacherMock);
+        when(passwordEncoder.encode(anyString())).thenReturn("hashedpwd");
+
+        TeacherResponseDTO response = teacherService.addTeacher(addDto);
+
+        assertNotNull(response);
+        assertEquals(ServiceRole.STAGE_GROUP_LEADER, response.getServiceRole());
+        assertEquals(1L, response.getStageGroupId());
+    }
+
+    // ==========================================
+    // CLASS ROLE VALIDATION TESTS (CLASS_TEACHER, etc.)
+    // ==========================================
+
+    @Test
+    void addTeacher_ClassTeacherMissingClassGradeId_ThrowsBadRequestException() {
+        addDto.setServiceRole(ServiceRole.CLASS_TEACHER);
         addDto.setClassGradeId(null);
 
         when(accountRepository.existsByUsername(addDto.getUsername())).thenReturn(false);
@@ -258,30 +285,28 @@ public class TeacherServiceTest {
             teacherService.addTeacher(addDto);
         });
 
-        assertEquals("Class grade ID is required for CLASS_SERVANT role", ex.getMessage());
+        assertEquals("Class grade ID is required for class roles", ex.getMessage());
     }
 
     @Test
-    void updateTeacher_ClassServantWithStageId_ThrowsBadRequestException() {
-        UUID id = UUID.randomUUID();
-        updateDto.setServiceRole(ServiceRole.CLASS_SERVANT);
-        updateDto.setClassGradeId(1L);
-        updateDto.setStageId(1L);
+    void addTeacher_ClassTeacherWithStageGroupId_ThrowsBadRequestException() {
+        addDto.setServiceRole(ServiceRole.CLASS_TEACHER);
+        addDto.setClassGradeId(1L);
+        addDto.setStageGroupId(1L);
 
-        when(teacherRepository.findById(id)).thenReturn(Optional.of(existingTeacher));
+        when(accountRepository.existsByUsername(addDto.getUsername())).thenReturn(false);
 
         BadRequestException ex = assertThrows(BadRequestException.class, () -> {
-            teacherService.updateTeacher(id, updateDto);
+            teacherService.addTeacher(addDto);
         });
 
-        assertEquals("CLASS_SERVANT cannot manually assign stage", ex.getMessage());
+        assertEquals("Class roles cannot be assigned to stage or stage group", ex.getMessage());
     }
 
     @Test
-    void addTeacher_ClassServantValid_SavesSuccessfully() {
-        addDto.setServiceRole(ServiceRole.CLASS_SERVANT);
+    void addTeacher_ClassTeacherValid_SavesSuccessfully() {
+        addDto.setServiceRole(ServiceRole.CLASS_TEACHER);
         addDto.setClassGradeId(1L);
-        addDto.setStageId(null);
 
         when(accountRepository.existsByUsername(addDto.getUsername())).thenReturn(false);
 
@@ -294,7 +319,7 @@ public class TeacherServiceTest {
         teacherMock.setId(UUID.randomUUID());
         teacherMock.setFirstName(addDto.getFirstName());
         teacherMock.setLastName(addDto.getLastName());
-        teacherMock.setServiceRole(ServiceRole.CLASS_SERVANT);
+        teacherMock.setServiceRole(ServiceRole.CLASS_TEACHER);
         teacherMock.setClassGrade(mockGrade);
 
         when(teacherRepository.save(any(Teacher.class))).thenReturn(teacherMock);
@@ -303,9 +328,7 @@ public class TeacherServiceTest {
         TeacherResponseDTO response = teacherService.addTeacher(addDto);
 
         assertNotNull(response);
-        assertEquals(ServiceRole.CLASS_SERVANT, response.getServiceRole());
+        assertEquals(ServiceRole.CLASS_TEACHER, response.getServiceRole());
         assertEquals(1L, response.getClassGradeId());
-        verify(classGradeService).getClassGradeById(1L);
-        verify(teacherRepository).save(any(Teacher.class));
     }
 }

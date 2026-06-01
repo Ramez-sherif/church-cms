@@ -3,6 +3,7 @@ package com.church.cms.sundaySchool.teachers;
 import com.church.cms.sundaySchool.common.ServiceRole;
 import com.church.cms.sundaySchool.grades.ClassGrade;
 import com.church.cms.sundaySchool.stages.Stage;
+import com.church.cms.sundaySchool.stageGroups.StageGroup;
 
 public class TeacherMapper {
 
@@ -12,6 +13,7 @@ public class TeacherMapper {
         public static Teacher toEntity(
                         TeacherRequestDTO dto,
                         ClassGrade grade,
+                        StageGroup stageGroup,
                         Stage stage) {
 
                 Teacher teacher = new Teacher();
@@ -37,21 +39,35 @@ public class TeacherMapper {
                 // =========================
                 // Role-based assignments
                 // =========================
-                if (dto.getServiceRole() == ServiceRole.CLASS_SERVANT) {
+                ServiceRole role = dto.getServiceRole();
+                if (role == ServiceRole.CLASS_SERVANT
+                                || role == ServiceRole.CLASS_TEACHER
+                                || role == ServiceRole.ASSISTANT_CLASS_TEACHER) {
                         teacher.setClassGrade(grade);
                         if (grade != null && grade.getStageGroup() != null) {
+                                teacher.setStageGroup(grade.getStageGroup());
                                 teacher.setStage(grade.getStageGroup().getStage());
+                        } else {
+                                teacher.setStageGroup(null);
+                                teacher.setStage(null);
+                        }
+                } else if (role == ServiceRole.STAGE_GROUP_LEADER
+                                || role == ServiceRole.ASSISTANT_STAGE_GROUP_LEADER) {
+                        teacher.setStageGroup(stageGroup);
+                        if (stageGroup != null) {
+                                teacher.setStage(stageGroup.getStage());
                         } else {
                                 teacher.setStage(null);
                         }
-                } else if (dto.getServiceRole() == ServiceRole.STAGE_LEADER
-                                || dto.getServiceRole() == ServiceRole.ASSISTANT_STAGE_LEADER
-                                || dto.getServiceRole() == ServiceRole.STAGE_GROUP_LEADER
-                                || dto.getServiceRole() == ServiceRole.ASSISTANT_STAGE_GROUP_LEADER) {
+                        teacher.setClassGrade(null);
+                } else if (role == ServiceRole.STAGE_LEADER
+                                || role == ServiceRole.ASSISTANT_STAGE_LEADER) {
                         teacher.setStage(stage);
+                        teacher.setStageGroup(null);
                         teacher.setClassGrade(null);
                 } else {
                         teacher.setStage(null);
+                        teacher.setStageGroup(null);
                         teacher.setClassGrade(null);
                 }
 
@@ -92,6 +108,13 @@ public class TeacherMapper {
                                         teacher.getStage().getId());
                         dto.setStageName(
                                         teacher.getStage().getName());
+                }
+
+                if (teacher.getStageGroup() != null) {
+                        dto.setStageGroupId(
+                                        teacher.getStageGroup().getId());
+                        dto.setStageGroupName(
+                                        teacher.getStageGroup().getName());
                 }
 
                 if (teacher.getClassGrade() != null) {

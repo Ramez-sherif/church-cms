@@ -32,39 +32,26 @@ public class AuthorizationService {
         }
 
         // =========================
-        // STAGE ADMIN
-        // حاليا bypass مؤقت
-        // =========================
-        if (securityUtils.isStageAdmin()) {
-            return;
-        }
-
-        // =========================
         // Get Class Grade
         // =========================
         ClassGrade classGrade = classGradeService
                 .getClassGradeById(classGradeId);
 
         // =========================
-        // CLASS SERVANT
+        // CLASS ROLE (SERVANT, TEACHER, ASSISTANT TEACHER)
         // =========================
-        if (securityUtils.isClassServant()) {
+        if (securityUtils.isClassServant()
+                || securityUtils.isClassTeacher()
+                || securityUtils.isAssistantClassTeacher()) {
 
             Teacher teacher = securityUtils.getCurrentTeacher();
 
             if (teacher.getClassGrade() == null) {
-
-                throw new ForbiddenException(
-                        "Servant has no class");
+                throw new ForbiddenException("Teacher has no class");
             }
 
-            if (!teacher
-                    .getClassGrade()
-                    .getId()
-                    .equals(classGrade.getId())) {
-
-                throw new ForbiddenException(
-                        "You cannot access this class");
+            if (!teacher.getClassGrade().getId().equals(classGrade.getId())) {
+                throw new ForbiddenException("You cannot access this class");
             }
 
             return;
@@ -72,30 +59,26 @@ public class AuthorizationService {
 
         // =========================
         // STAGE GROUP LEADER
-        // حاليا يشوف نفس الـ group
         // =========================
         if (securityUtils.isStageGroupLeader()
                 || securityUtils.isAssistantStageGroupLeader()) {
 
             Teacher teacher = securityUtils.getCurrentTeacher();
 
-            if (teacher.getClassGrade() == null) {
-
-                throw new ForbiddenException(
-                        "Leader has no class");
+            if (teacher.getStageGroup() == null) {
+                throw new ForbiddenException("Leader has no stage group");
             }
 
-            Long currentGroupId = teacher.getClassGrade()
-                    .getStageGroup()
-                    .getId();
+            Long currentGroupId = teacher.getStageGroup().getId();
 
-            Long targetGroupId = classGrade.getStageGroup()
-                    .getId();
+            if (classGrade.getStageGroup() == null) {
+                throw new ForbiddenException("Target class has no stage group");
+            }
+
+            Long targetGroupId = classGrade.getStageGroup().getId();
 
             if (!currentGroupId.equals(targetGroupId)) {
-
-                throw new ForbiddenException(
-                        "You cannot access this stage group");
+                throw new ForbiddenException("You cannot access this stage group");
             }
 
             return;
@@ -103,32 +86,26 @@ public class AuthorizationService {
 
         // =========================
         // STAGE LEADER
-        // حاليا يشوف نفس الـ stage
         // =========================
         if (securityUtils.isStageLeader()
                 || securityUtils.isAssistantStageLeader()) {
 
             Teacher teacher = securityUtils.getCurrentTeacher();
 
-            if (teacher.getClassGrade() == null) {
-
-                throw new ForbiddenException(
-                        "Leader has no class");
+            if (teacher.getStage() == null) {
+                throw new ForbiddenException("Leader has no stage");
             }
 
-            Long currentStageId = teacher.getClassGrade()
-                    .getStageGroup()
-                    .getStage()
-                    .getId();
+            Long currentStageId = teacher.getStage().getId();
 
-            Long targetStageId = classGrade.getStageGroup()
-                    .getStage()
-                    .getId();
+            if (classGrade.getStageGroup() == null || classGrade.getStageGroup().getStage() == null) {
+                throw new ForbiddenException("Target class has no stage");
+            }
+
+            Long targetStageId = classGrade.getStageGroup().getStage().getId();
 
             if (!currentStageId.equals(targetStageId)) {
-
-                throw new ForbiddenException(
-                        "You cannot access this stage");
+                throw new ForbiddenException("You cannot access this stage");
             }
 
             return;

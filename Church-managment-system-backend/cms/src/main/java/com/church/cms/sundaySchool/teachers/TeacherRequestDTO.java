@@ -53,6 +53,11 @@ public class TeacherRequestDTO {
     private Long stageId;
 
     // =========================
+    // Responsible StageGroup
+    // =========================
+    private Long stageGroupId;
+
+    // =========================
     // Responsible Class
     // =========================
     private Long classGradeId;

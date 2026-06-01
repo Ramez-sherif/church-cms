@@ -113,13 +113,22 @@ public class SecurityUtils {
                                 getCurrentServiceRole() == ServiceRole.GENERAL_ADMIN;
         }
 
-        public boolean isStageAdmin() {
+        public boolean isClassTeacher() {
 
                 return isTeacher()
 
                                 &&
 
-                                getCurrentServiceRole() == ServiceRole.STAGE_ADMIN;
+                                getCurrentServiceRole() == ServiceRole.CLASS_TEACHER;
+        }
+
+        public boolean isAssistantClassTeacher() {
+
+                return isTeacher()
+
+                                &&
+
+                                getCurrentServiceRole() == ServiceRole.ASSISTANT_CLASS_TEACHER;
         }
 
         public boolean isStageLeader() {
