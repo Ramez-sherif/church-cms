@@ -122,9 +122,10 @@ const LandingPage = () => {
             <img
               src="/churchlogoHome.png"
               alt="Church Logo"
+              className="landing-nav-logo"
               style={{
-                width: '48px',
-                height: '48px',
+                width: '75px',
+                height: '75px',
                 objectFit: 'contain',
                 flexShrink: 0,
                 transition: 'transform 0.2s ease'
@@ -148,7 +149,7 @@ const LandingPage = () => {
                 style={{
                   fontSize: '0.78rem',
                   fontWeight: '600',
-                  color: scrolled ? '#64748b' : 'rgba(255,255,255,0.75)',
+                  color: scrolled ? '#B69265' : '#B69265',
                   transition: 'color 0.3s',
                   whiteSpace: 'nowrap'
                 }}
@@ -358,7 +359,7 @@ const LandingPage = () => {
             }}
             className="hero-title"
           >
-            مرحباً بكم في نظام إدارة<br />كنيسة السيدة العذراء مريم<br /><span style={{ fontSize: '2rem', fontWeight: '700', opacity: 0.85 }}>العباسية الشرقية</span>
+            مرحباً بكم في نظام إدارة<br />كنيسة السيدة العذراء مريم<br /><span style={{ fontSize: '2rem', fontWeight: '700', color: '#B69265' }}>العباسية الشرقية</span>
           </h1>
           <p
             style={{
@@ -1067,6 +1068,16 @@ const LandingPage = () => {
             @media (max-width: 767px) {
               .hero-title {
                 font-size: 2.25rem !important;
+              }
+              .landing-nav-logo {
+                width: 45px !important;
+                height: 45px !important;
+              }
+            }
+            @media (min-width: 768px) and (max-width: 1023px) {
+              .landing-nav-logo {
+                width: 55px !important;
+                height: 55px !important;
               }
             }
             html {

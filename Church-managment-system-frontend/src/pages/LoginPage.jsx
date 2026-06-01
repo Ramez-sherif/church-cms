@@ -161,10 +161,10 @@ const LoginPage = () => {
         style={{
           position: 'relative',
           width: '100%',
-          maxWidth: '380px',
+          maxWidth: '320px',
           backgroundColor: 'rgba(255,255,255,0.96)',
           backdropFilter: 'blur(12px)',
-          padding: '2.5rem',
+          padding: '1.75rem 1.75rem 2rem',
           borderRadius: '28px',
           boxShadow: '0 20px 60px rgba(15,23,42,0.18)',
           zIndex: 1,
@@ -178,7 +178,7 @@ const LoginPage = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            marginBottom: '2rem',
+            marginBottom: '1.25rem',
             background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
             color: 'white',
             border: 'none',
@@ -199,42 +199,31 @@ const LoginPage = () => {
         <div
           style={{
             textAlign: 'center',
-            marginBottom: '1.5rem'
+            marginBottom: '1rem'
           }}
         >
             {/* Church Logo */}
-            <div className="login-logo-container" style={{
-              width: '128px',
-              height: '128px',
-              borderRadius: '9999px',
-              background: '#ffffff',
-              padding: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 16px',
-              boxShadow: '0 8px 32px rgba(15,23,42,0.12), 0 2px 8px rgba(15,23,42,0.08)'
-            }}>
-              <img
-                src="/churchLogo.png"
-                alt="Church Logo"
-                className="login-church-logo"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  borderRadius: '9999px'
-                }}
-              />
-            </div>
+            <img
+              src="/churchLogo.png"
+              alt="Church Logo"
+              className="login-church-logo"
+              style={{
+                width: '100px',
+                height: '100px',
+                objectFit: 'contain',
+                margin: '0 auto 12px',
+                display: 'block',
+                filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.1))'
+              }}
+            />
             <h1
               className="login-header-title"
               style={{
-                fontSize: '48px',
+                fontSize: '36px',
                 fontWeight: '700',
                 color: '#1e293b',
                 textAlign: 'center',
-                margin: '0 0 8px'
+                margin: '0 0 6px'
               }}
             >
               تسجيل الدخول
@@ -259,15 +248,15 @@ const LoginPage = () => {
             }} />
         </div>
 
-        {/* Responsive logo sizing */}
+        {/* Responsive sizing */}
         <style dangerouslySetInnerHTML={{ __html: `
           @media (max-width: 768px) {
-            .login-logo-container {
-              width: 110px !important;
-              height: 110px !important;
+            .login-church-logo {
+              width: 80px !important;
+              height: 80px !important;
             }
             .login-header-title {
-              font-size: 36px !important;
+              font-size: 28px !important;
             }
           }
         `}} />
