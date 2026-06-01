@@ -10,7 +10,6 @@ import {
   BookOpen,
   Heart,
   Calendar,
-  Compass,
   ArrowLeft,
   ChevronLeft
 } from 'lucide-react';
@@ -120,31 +119,43 @@ const LandingPage = () => {
               cursor: 'pointer'
             }}
           >
-            <div
+            <img
+              src="/churchlogoHome.png"
+              alt="Church Logo"
               style={{
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                backgroundColor: '#2563eb',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                boxShadow: '0 4px 6px -1px rgba(37, 99, 235, 0.3)'
+                width: '48px',
+                height: '48px',
+                objectFit: 'contain',
+                flexShrink: 0,
+                transition: 'transform 0.2s ease'
               }}
-            >
-              <Compass size={22} />
+              onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.08)')}
+              onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.25' }}>
+              <span
+                style={{
+                  fontSize: '1.05rem',
+                  fontWeight: '800',
+                  color: scrolled ? '#0f172a' : 'white',
+                  transition: 'color 0.3s',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                كنيسة السيدة العذراء مريم
+              </span>
+              <span
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: '600',
+                  color: scrolled ? '#64748b' : 'rgba(255,255,255,0.75)',
+                  transition: 'color 0.3s',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                العباسية الشرقية
+              </span>
             </div>
-            <span
-              style={{
-                fontSize: '1.25rem',
-                fontWeight: '800',
-                color: scrolled ? '#0f172a' : 'white',
-                transition: 'color 0.3s'
-              }}
-            >
-              كنيسة القديسين
-            </span>
           </div>
 
           {/* Desktop Nav Items */}
@@ -347,7 +358,7 @@ const LandingPage = () => {
             }}
             className="hero-title"
           >
-            مرحباً بكم في نظام كنيسة القديسين
+            مرحباً بكم في نظام إدارة<br />كنيسة السيدة العذراء مريم<br /><span style={{ fontSize: '2rem', fontWeight: '700', opacity: 0.85 }}>العباسية الشرقية</span>
           </h1>
           <p
             style={{
@@ -1012,9 +1023,23 @@ const LandingPage = () => {
         }}
       >
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'white' }}>
-            <Compass size={24} />
-            <span style={{ fontSize: '1.125rem', fontWeight: '800' }}>كنيسة القديسين والشهداء</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', color: 'white' }}>
+            <img
+              src="/churchlogoHome.png"
+              alt="Church Logo"
+              style={{
+                width: '40px',
+                height: '40px',
+                objectFit: 'contain',
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.1)',
+                padding: '3px'
+              }}
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: '1.3' }}>
+              <span style={{ fontSize: '1.05rem', fontWeight: '800' }}>كنيسة السيدة العذراء مريم</span>
+              <span style={{ fontSize: '0.78rem', fontWeight: '600', color: '#94a3b8' }}>العباسية الشرقية</span>
+            </div>
           </div>
 
           <p style={{ fontSize: '0.85rem', margin: 0, color: '#64748b' }}>
