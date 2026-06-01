@@ -4,7 +4,8 @@ import {
   Lock,
   User,
   Loader2,
-  ArrowRight
+  ArrowRight,
+  Church
 } from 'lucide-react';
 
 import useAuthStore from '../store/useAuthStore';
@@ -161,12 +162,14 @@ const LoginPage = () => {
         style={{
           position: 'relative',
           width: '100%',
-          maxWidth: '400px',
-          backgroundColor: 'white',
+          maxWidth: '380px',
+          backgroundColor: 'rgba(255,255,255,0.96)',
+          backdropFilter: 'blur(12px)',
           padding: '2.5rem',
-          borderRadius: '1rem',
-          boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-          zIndex: 1
+          borderRadius: '28px',
+          boxShadow: '0 20px 60px rgba(15,23,42,0.18)',
+          zIndex: 1,
+          transition: 'all 0.25s ease'
         }}
       >
         {/* Back To Website */}
@@ -176,13 +179,17 @@ const LoginPage = () => {
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
-            marginBottom: '1.5rem',
-            background: 'none',
+            marginBottom: '2rem',
+            background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+            color: 'white',
             border: 'none',
-            color: '#64748b',
+            borderRadius: '9999px',
+            padding: '0.4rem 1rem',
             cursor: 'pointer',
             fontSize: '0.9rem',
-            fontWeight: '600'
+            fontWeight: '600',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            transition: 'transform 0.2s, box-shadow 0.2s'
           }}
         >
           <ArrowRight size={18} />
@@ -196,23 +203,47 @@ const LoginPage = () => {
             marginBottom: '2rem'
           }}
         >
-          <h1
-            style={{
-              fontSize: '1.75rem',
-              fontWeight: '700',
-              color: '#1e293b'
-            }}
-          >
-            تسجيل الدخول
-          </h1>
-          <p
-            style={{
-              color: '#64748b',
-              marginTop: '0.5rem'
-            }}
-          >
-            مرحباً بك في نظام إدارة الكنيسة
-          </p>
+            <div style={{
+              width: '90px',
+              height: '90px',
+              borderRadius: '50%',
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 1rem',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}>
+              <Church size={48} color="white" />
+            </div>
+            <h1
+              style={{
+                fontSize: '42px',
+                fontWeight: '800',
+                color: '#1e293b',
+                textAlign: 'center'
+              }}
+            >
+              تسجيل الدخول
+            </h1>
+            <p
+              style={{
+                color: '#64748b',
+                marginTop: '0.5rem',
+                textAlign: 'center',
+                fontSize: '1rem'
+              }}
+            >
+              مرحباً بك في نظام إدارة الكنيسة
+            </p>
+            {/* Accent line */}
+            <div style={{
+              width: '40px',
+              height: '3px',
+              backgroundColor: '#2563eb',
+              margin: '0.75rem auto 1.5rem',
+              borderRadius: '2px'
+            }} />
         </div>
 
         {/* Error */}
@@ -263,16 +294,27 @@ const LoginPage = () => {
                 type="text"
                 value={username}
                 onChange={handleUsernameChange}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#2563eb';
+                  e.currentTarget.style.boxShadow = '0 0 0 4px rgba(37,99,235,0.12)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = validationErrors.username ? '#ef4444' : '#dbe4ff';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
                 style={{
                   width: '100%',
-                  padding: '0.75rem 2.5rem 0.75rem 0.75rem',
-                  border: '1px solid #cbd5e1',
-                  borderColor: validationErrors.username ? '#ef4444' : '#cbd5e1',
-                  borderRadius: '0.5rem',
+                  height: '58px',
+                  padding: '0 2.5rem 0 0.75rem',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #dbe4ff',
+                  borderColor: validationErrors.username ? '#ef4444' : '#dbe4ff',
+                  borderRadius: '16px',
                   outline: 'none',
-                  fontSize: '1rem',
+                  fontSize: '0.9rem',
                   boxSizing: 'border-box',
-                  color: '#0f172a'
+                  color: '#1e293b',
+                  transition: 'border-color 0.2s, box-shadow 0.2s'
                 }}
                 placeholder="اسم المستخدم"
               />
@@ -321,16 +363,27 @@ const LoginPage = () => {
                 type="password"
                 value={password}
                 onChange={handlePasswordChange}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#2563eb';
+                  e.currentTarget.style.boxShadow = '0 0 0 4px rgba(37,99,235,0.12)';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = validationErrors.password ? '#ef4444' : '#dbe4ff';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
                 style={{
                   width: '100%',
-                  padding: '0.75rem 2.5rem 0.75rem 0.75rem',
-                  border: '1px solid #cbd5e1',
-                  borderColor: validationErrors.password ? '#ef4444' : '#cbd5e1',
-                  borderRadius: '0.5rem',
+                  height: '58px',
+                  padding: '0 2.5rem 0 0.75rem',
+                  backgroundColor: '#ffffff',
+                  border: '1px solid #dbe4ff',
+                  borderColor: validationErrors.password ? '#ef4444' : '#dbe4ff',
+                  borderRadius: '16px',
                   outline: 'none',
-                  fontSize: '1rem',
+                  fontSize: '0.9rem',
                   boxSizing: 'border-box',
-                  color: '#0f172a'
+                  color: '#1e293b',
+                  transition: 'border-color 0.2s, box-shadow 0.2s'
                 }}
                 placeholder="••••••••"
               />
@@ -358,18 +411,20 @@ const LoginPage = () => {
             style={{
               width: '100%',
               padding: '0.875rem',
-              backgroundColor: '#2563eb',
+              background: 'linear-gradient(135deg, #2563eb, #1d4ed8)',
               color: 'white',
               border: 'none',
-              borderRadius: '0.5rem',
-              fontSize: '1rem',
-              fontWeight: '600',
+              borderRadius: '16px',
+              height: '60px',
+              fontSize: '20px',
+              fontWeight: '700',
               cursor: loading ? 'not-allowed' : 'pointer',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               gap: '0.5rem',
-              transition: 'background 0.2s'
+              transition: 'all 0.25s ease',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
             }}
           >
             {loading ? <Loader2 className="animate-spin" size={20} /> : 'دخول'}
@@ -382,17 +437,20 @@ const LoginPage = () => {
         dangerouslySetInnerHTML={{
           __html: `
             .animate-spin {
-              animation: spin 1s linear infinite;
-            }
+               animation: spin 1s linear infinite;
+             }
 
-            @keyframes spin {
-              from {
-                transform: rotate(0deg);
-              }
-              to {
-                transform: rotate(360deg);
-              }
-            }
+             @keyframes spin {
+               from { transform: rotate(0deg); }
+               to { transform: rotate(360deg); }
+             }
+
+             /* Input placeholder styling */
+             input::placeholder { color: #64748b; opacity: 1; }
+
+             /* Fade-in animation for card */
+             .login-card { animation: fadeIn 0.5s ease forwards; opacity: 0; }
+             @keyframes fadeIn { to { opacity: 1; } }
           `
         }}
       />
